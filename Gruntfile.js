@@ -6,10 +6,10 @@ module.exports = function(grunt) {
 
     grunt.log.writeln('JS/CSS minification is ' + (DEBUG_ON ? 'off' : 'on') + '.  If you wish to disable minification, run grunt with --dev');
 
-    var default_tasks = [
-        'copy',
-        'sass'
-    ];
+    var default_tasks = [];
+
+    default_tasks.push('copy');
+    default_tasks.push('sass');
 
     if (DEBUG_ON) {
         default_tasks.push('uglify');
@@ -25,7 +25,7 @@ module.exports = function(grunt) {
         files:  'src/**/*',
         grunt: {
             // auto-reload Gruntfile if it changes
-            files: ['Gruntfile.js', 'package.json']
+            files: ['Gruntfile.js', 'package.json', 'build/']
         }
     };
 
@@ -37,11 +37,13 @@ module.exports = function(grunt) {
         main: {
             files: [{
                 expand: true,
-                src: ['src/**/*'],
+                cwd: 'src/',
+                src: ['**/*'],
                 dest: 'build/',
-                filter: function non_compiled_files (path) {
-                    return !/(.css$|.js$)/.test(path);
-                }
+                filter: 'isFile'
+                // filter: function non_compiled_files (path) {
+                //     return !/(.scss|.js$)/.test(path);
+                // }
             }]
         }
     };
@@ -70,12 +72,7 @@ module.exports = function(grunt) {
         my_target: {
             files: {
                 'build/js/app.min.js': [
-                    'src/js/app.js',
-                    'src/js/services.js',
-                    'src/js/controllers.js',
-                    'src/js/filters.js',
-                    'src/js/directives.js',
-                    'src/js/animations.js'
+                    'src/js/*'
                 ]
             }
         },
