@@ -59,7 +59,7 @@ module.exports = function(grunt) {
                 precision: 20
             },
             files: {
-                'build/css/app.css': 'src/css/app.scss'
+                'build/css/app.min.css': 'src/css/app.scss'
             }
         }
     };
