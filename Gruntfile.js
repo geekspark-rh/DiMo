@@ -4,7 +4,11 @@ module.exports = function(grunt) {
 
     var DEBUG_ON = !!grunt.option('dev');
 
-    grunt.log.writeln('JS/CSS minification is ' + (DEBUG_ON ? 'off' : 'on') + '.  If you wish to disable minification, run grunt with --dev');
+    if (DEBUG_ON) {
+        grunt.log.writeln('JS/CSS minification is off.  If you wish to enable minification, run grunt without --dev');
+    } else {
+        grunt.log.writeln('JS/CSS minification is on.  If you wish to disable minification, run grunt with --dev');
+    }
 
     var default_tasks = [];
 
