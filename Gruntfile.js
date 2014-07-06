@@ -48,6 +48,10 @@ module.exports = function(grunt) {
                 // filter: function non_compiled_files (path) {
                 //     return !/(.scss|.js$)/.test(path);
                 // }
+            }, { // make sure app.js gets copied to app.min.js even when --dev
+                 // is on
+                src: 'src/js/app.js',
+                dest: 'build/js/app.min.js'
             }]
         }
     };
