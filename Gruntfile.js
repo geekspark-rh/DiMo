@@ -15,7 +15,7 @@ module.exports = function(grunt) {
     default_tasks.push('copy');
     default_tasks.push('sass');
 
-    if (DEBUG_ON) {
+    if (!DEBUG_ON) {
         default_tasks.push('uglify');
         default_tasks.push('cssmin');
     }
