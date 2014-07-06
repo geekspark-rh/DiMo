@@ -25,11 +25,12 @@ module.exports = function(grunt) {
      *******************/
 
     var watch_options = {
-        tasks: default_tasks,
-        files:  'src/**/*',
-        grunt: {
-            // auto-reload Gruntfile if it changes
-            files: ['Gruntfile.js', 'package.json', 'build/']
+        scripts: {
+            files:  ['src/**/*', 'Gruntfile.js', 'package.json'],
+            tasks: default_tasks,
+            options: {
+                atBegin: true
+            }
         }
     };
 
