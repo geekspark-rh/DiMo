@@ -7,10 +7,29 @@
 
     var camera, scene, renderer, particle_geometry, particle_system, origin, particle_colors;
 
-    var explosion_scale = new THREE.Vector3( 25, 25, 25 );
+    var explosion_scale = new THREE.Vector3( 50, 50, 50 );
+    var abs = Math.abs;
+    var rand = Math.random;
 
     init();
     animate();
+
+    /**
+     * Add a new particle to the given geometry.
+     *
+     * @param {Geometry} geo The ThreeJS geometry to add the particle to.
+     * @param {Vector3} pos The initial position.
+     * @param {Vector3} vel The initial velocity.
+     */
+    function add_particle(geo, pos, vel) {
+        // create a particle with random
+        // position values, -250 -> 250
+        var particle = pos.clone();
+        particle.velocity = vel;
+
+        // add it to the geometry
+        geo.vertices.push(particle);
+    }
 
     function init() {
 
@@ -20,7 +39,7 @@
 
         //
 
-        camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 5, 3500 );
+        camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 5, 9001 );
         camera.position.z = 2750;
 
         scene = new THREE.Scene();
@@ -37,8 +56,8 @@
             // transparent  : false
         var particle_material = new THREE.ParticleSystemMaterial({
             size            : 25,
-            color           : 0xaaaaaa,
-            // vertexColors    : THREE.VertexColors,
+            // color           : 0xaaaaaa,
+            vertexColors    : THREE.VertexColors,
             blending        : THREE.AdditiveBlending,
             sizeAttenuation : false,
             transparent     : true,
@@ -55,21 +74,23 @@
 
         var n = 1000, n2 = n / 2; // particles spread in the cube
 
+        var pos, vel;
+        var colors = [];
+        colors[0] = new THREE.Color(1, 0, 0);
+        colors[1] = new THREE.Color(0, 1, 0);
+        colors[2] = new THREE.Color(0, 0, 1);
+        colors[3] = new THREE.Color(0, 1, 1);
+
         for ( var i = 0; i < particle_count; ++i ) {
             // create a particle with random
             // position values, -250 -> 250
-            var x = Math.random() * n - n2;
-            var y = Math.random() * n - n2;
-            var z = 0;
-            var particle = new THREE.Vector3(x, y, z);
-            particle.velocity = origin.clone().sub(particle).divide(explosion_scale); // initial velocity towards the origin
+            
+            pos = new THREE.Vector3( rand() * n - n2, rand() * n - n2, 0 );
+            vel = origin.clone().sub(pos).divide(explosion_scale); // initial velocity towards the origin
 
-            // add it to the geometry
-            particle_geometry.vertices.push(particle);
+            add_particle( particle_geometry, pos, vel);
 
-            color = new THREE.Color( 128, 128, 0 );
-            color.setRGB( 128, 128, 0 );
-            particle_colors[i] = color;
+            particle_colors.push(colors[i % 4]);
         }
 
         particle_geometry.computeBoundingSphere();
@@ -84,7 +105,7 @@
         //
 
         renderer = new THREE.WebGLRenderer( { antialias: true, precision: 'highp', alpha: true } );
-        renderer.setClearColor( 0x000000, 1 );
+        renderer.setClearColor( 0x1c1c1c, 1 );
         renderer.setSize( window.innerWidth, window.innerHeight );
 
         container.appendChild( renderer.domElement );
@@ -140,8 +161,8 @@
             particle = particle_system.geometry.vertices[i];
             particle.x += particle.velocity.x;
             particle.y += particle.velocity.y;
-            particle.velocity.x += Math.random() * 4 - 2;
-            particle.velocity.y += Math.random() * 4 - 2;
+            particle.velocity.x += Math.random() * 1 - 0.5;
+            particle.velocity.y += Math.random() * 1 - 0.5;
         }
         particle_system.geometry.__dirtyVertices = true;
         particle_system.geometry.verticesNeedUpdate = true;
