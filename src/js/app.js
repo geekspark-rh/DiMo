@@ -188,16 +188,16 @@
 
 
     function getAcceleration(particle, particle2) {
-        var r1 = new Array( particle.x, particle.y);
-        var r2 = new Array( particle2.x, particle2.y);
-        var r12 = new Array(r2[0]-r1[0], r2[1]-r1[1]);
-        var u = new Array( r12[0]/Math.abs(r12[0] + r12[1])/2, r12[1]/Math.abs(r12[0] + r12[1])/2 );
+        var r1 = [particle.x, particle.y];
+        var r2 = [particle2.x, particle2.y];
+        var r12 = [r2[0]-r1[0], r2[1]-r1[1]];
+        var u = [r12[0]/Math.abs(r12[0] + r12[1])/2, r12[1]/Math.abs(r12[0] + r12[1])/2];
     
         var m1 = particle.mass;
         var m2 = particle2.mass;
 
         var r_sqrd = Math.pow(r12[0], 2) + Math.pow(r12[1], 2);
-        var a12 = new Array( -(g*m2/r_sqrd)*u[0], -(g*m2/r_sqrd)*u[1]);
+        var a12 = [-(g*m2/r_sqrd)*u[0], -(g*m2/r_sqrd)*u[1]];
         return a12;
     }
 
