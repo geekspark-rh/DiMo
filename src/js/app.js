@@ -215,7 +215,7 @@
         // for(var i = 0; i < particle_system.geometry.getAttribute('position').array.length; i++ ) {
         //     particle_system.geometry.getAttribute('position').array[i] += 1;
         // }
-        var particle;
+        var particle, particle2;
         var r;
         var accel;
         for ( var i = particle_system.geometry.vertices.length - 1; i >= 0; --i ) {
@@ -248,11 +248,11 @@
             player_piece.velocity.y = (Math.random() - 0.5) * 40 - 2;
         }
 
-        particle_system.geometry.__dirtyVertices = true;
-        particle_system.geometry.verticesNeedUpdate = true;
+        // particle_system.geometry.__dirtyVertices = true;
+        // particle_system.geometry.verticesNeedUpdate = true;
 
-        player_system.geometry.__dirtyVertices = true;
-        player_system.geometry.verticesNeedUpdate = true;
+        // player_system.geometry.__dirtyVertices = true;
+        // player_system.geometry.verticesNeedUpdate = true;
 
         renderer.render( scene, camera );
     }
