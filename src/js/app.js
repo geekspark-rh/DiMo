@@ -9,9 +9,21 @@
 
     var explosion_scale = new THREE.Vector3( 25, 25, 25 );
 
+    var fps = 5;
+    var now;
+    var then = Date.now();
+    var interval = 1000 / fps;
+    var delta;
+
     var g = 5.81;
     init();
     animate();
+
+    function set_fps(new_fps) {
+        fps = new_fps;
+        interval = 1000 / fps;
+    }
+    window.set_fps = set_fps;
 
     function init() {
 
@@ -159,8 +171,14 @@
 
         requestAnimationFrame( animate );
 
-        render();
-        stats.update();
+        now = Date.now();
+        delta = now - then;
+
+        if (delta > interval) {
+            then = now - (delta % interval);
+            render();
+            stats.update();
+        }
 
     }
 
