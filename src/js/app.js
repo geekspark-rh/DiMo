@@ -72,7 +72,7 @@
             // vertexColors    : THREE.VertexColors,
             blending        : THREE.AdditiveBlending,
             sizeAttenuation : true,
-            transparent     : false,
+            transparent     : true,
             map             : THREE.ImageUtils.loadTexture('img/particle.png')
         });
 
