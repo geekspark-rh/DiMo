@@ -43,6 +43,10 @@
         var particle_count = 10;
         var player_count = 4;
         var particle_size = 25;
+        var particle_mass = particle_size * particle_size * Math.PI;
+
+        var player_size = 50;
+        var player_mass = player_size * player_size * Math.PI;
 
         particle_geometry = new THREE.Geometry();
         player_geometry = new THREE.Geometry();
@@ -63,7 +67,7 @@
         });
 
         var player_material = new THREE.ParticleSystemMaterial({
-            size            : particle_size*2,
+            size            : player_size,
             color           : 0xff7920,
             // vertexColors    : THREE.VertexColors,
             blending        : THREE.AdditiveBlending,
@@ -90,7 +94,7 @@
             var z = 0;
             var particle = new THREE.Vector3(x, y, z);
             particle.velocity = origin.clone().sub(particle).divide(explosion_scale); // initial velocity towards the origin
-            particle.mass = particle_size*particle_size*Math.PI;
+            particle.mass = particle_mass;
             // add it to the geometry
             particle_geometry.vertices.push(particle);
 
@@ -107,7 +111,7 @@
             var z = 0;
             var player = new THREE.Vector3(x, y, z);
             player.velocity = origin.clone().sub(particle).divide(explosion_scale); // initial velocity towards the origin
-            player.mass = Math.pow(particle_size, 2)*Math.PI;
+            player.mass = player_mass;
             player.player = i;
             player_geometry.vertices.push(player);
 
