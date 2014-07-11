@@ -42,11 +42,11 @@
 
         var particle_count = 10;
         var player_count = 4;
-        var particle_size = 25;
-        var particle_mass = particle_size * particle_size * Math.PI;
+        var particle_size = 250;
+        var particle_mass = 20;
 
-        var player_size = 50;
-        var player_mass = player_size * player_size * Math.PI;
+        var player_size = 500;
+        var player_mass = 100;
 
         particle_geometry = new THREE.Geometry();
         player_geometry = new THREE.Geometry();
