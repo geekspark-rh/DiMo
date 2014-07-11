@@ -93,7 +93,7 @@
             var y = Math.random() * n - n2;
             var z = 0;
             var particle = new THREE.Vector3(x, y, z);
-            particle.velocity = origin.clone().sub(particle).divide(explosion_scale); // initial velocity towards the origin
+            particle.velocity = new THREE.Vector3(0, 0, 0);
             particle.mass = particle_mass;
             // add it to the geometry
             particle_geometry.vertices.push(particle);
@@ -244,8 +244,8 @@
             player_piece = player_system.geometry.vertices[j];
             player_piece.x += player_piece.velocity.x;
             player_piece.y += player_piece.velocity.y;
-            player_piece.velocity.x = (Math.random() - 0.5) * 40 - 2;
-            player_piece.velocity.y = (Math.random() - 0.5) * 40 - 2;
+            player_piece.velocity.x = (Math.random() - 0.5) * 1 - 0.5;
+            player_piece.velocity.y = (Math.random() - 0.5) * 1 - 0.5;
         }
 
         // particle_system.geometry.__dirtyVertices = true;
