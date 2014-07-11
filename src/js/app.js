@@ -61,7 +61,7 @@
             color           : 0xaaaaaa,
             // vertexColors    : THREE.VertexColors,
             blending        : THREE.AdditiveBlending,
-            sizeAttenuation : false,
+            sizeAttenuation : true,
             transparent     : true,
             map             : THREE.ImageUtils.loadTexture('img/particle.png')
         });
@@ -71,7 +71,7 @@
             color           : 0xff7920,
             // vertexColors    : THREE.VertexColors,
             blending        : THREE.AdditiveBlending,
-            sizeAttenuation : false,
+            sizeAttenuation : true,
             transparent     : false,
             map             : THREE.ImageUtils.loadTexture('img/particle.png')
         });
