@@ -9,7 +9,7 @@
 
     var explosion_scale = new THREE.Vector3( 25, 25, 25 );
 
-    var fps = 5;
+    var fps = 60;
     var now;
     var then = Date.now();
     var interval = 1000 / fps;
