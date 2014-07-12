@@ -211,17 +211,24 @@
         var particle;
         var particle2;
         var player_piece;
+        var particle_color;
+        var player_color;
 
         for ( i = particle_system.geometry.vertices.length - 1; i >= 0; --i ) {
             particle = particle_system.geometry.vertices[i];
+            particle_color = particle_system.geometry.colors[i];
             particle.x += particle.velocity.x;
             particle.y += particle.velocity.y;
             for ( j = player_system.geometry.vertices.length - 1; j >= 0; --j ) {
                 particle2 = player_system.geometry.vertices[j];
+                player_color = player_system.geometry.colors[j];
                 if (particle == particle2) {
                     continue;
                 }
                 if (particle.player > 0) {
+                    continue;
+                }
+                if (player_color != particle_color) {
                     continue;
                 }
                 particle.velocity.add( getAcceleration(particle, particle2) );
