@@ -9,15 +9,23 @@
     var camera;
     var scene;
     var renderer;
+
     var particle_geometry;
     var particle_system;
-    var ptrail_geometry;
-    var ptrail_system;
-    var origin;
     var particle_colors;
+
     var player_geometry;
     var player_system;
     var player_colors;
+
+    var ptrail_geometry;
+    var ptrail_system;
+
+    var origin;
+
+    // fmod increments every frame, wraps back to zero every second, to allow
+    // performing certain operations every 2nd frame, every 5th frame, etc
+    var fmod = 0;
 
     var max_velocity = 1;
 
@@ -39,7 +47,9 @@
     function set_fps(new_fps) {
         fps = new_fps;
         interval = 1000 / fps;
+        return fps;
     }
+    window.set_fps = set_fps;
 
     function init() {
 
@@ -57,11 +67,11 @@
 
         //
 
-        var particle_count = 10;
-        var player_count = 4;
+        var particle_count = 80;
         var particle_size = 250;
         var particle_mass = 20;
 
+        var player_count = 4;
         var player_size = 500;
         var player_mass = 50;
 
@@ -82,7 +92,7 @@
 
         var ptrail_material = new THREE.ParticleSystemMaterial({
             size            : particle_size / 2,
-            color           : 0xcccccc,
+            color           : 0x444444,
             blending        : THREE.AdditiveBlending,
             sizeAttenuation : true,
             transparent     : true,
@@ -102,10 +112,10 @@
         var i;
 
         var colors = [];
-        colors[0] = new THREE.Color(0.5, 0.0, 0.0);
-        colors[1] = new THREE.Color(0.0, 0.5, 0.0);
-        colors[2] = new THREE.Color(0.0, 0.0, 0.5);
-        colors[3] = new THREE.Color(0.0, 0.5, 0.5);
+        colors[0] = new THREE.Color(0.7, 0.0, 0.0);
+        colors[1] = new THREE.Color(0.0, 0.7, 0.0);
+        colors[2] = new THREE.Color(0.0, 0.0, 0.7);
+        colors[3] = new THREE.Color(0.0, 0.7, 0.7);
 
         for ( i = 0; i < particle_count; ++i ) {
             var particle = new THREE.Vector3(
@@ -159,7 +169,7 @@
         //
 
         renderer = new THREE.WebGLRenderer( { antialias: true, precision: 'highp', alpha: true } );
-        renderer.setClearColor( 0x1c1c1c, 1 );
+        renderer.setClearColor( 0x000000, 1 );
         renderer.setSize( window.innerWidth, window.innerHeight );
 
         container.appendChild( renderer.domElement );
@@ -227,25 +237,23 @@
         var ptrail;
         var new_ptrail;
 
+        // Increment and wrap fmod
+        fmod++;
+        fmod %= fps;
+
         for ( i = particle_geometry.vertices.length - 1; i >= 0; --i ) {
             particle = particle_geometry.vertices[i];
 
-            // Update the particle's position 
-            particle.x += particle.velocity.x;
-            particle.y += particle.velocity.y;
+            // Update the particle's position
+            particle.add( particle.velocity );
 
             // Add a particle trail
-            new_ptrail = new THREE.Vector3( particle.x, particle.y, particle.z );
-            new_ptrail.ttl = 120; // frames
+            new_ptrail = particle.clone();
+            new_ptrail.ttl = 2 * fps; // lasts n frames
             ptrail_geometry.vertices.push(new_ptrail);
-
-            // Remove expired particle trails
-            for ( k = ptrail_geometry.vertices.length - 1; k >= 0; --k ) {
-                ptrail = ptrail_geometry.vertices[k];
-                ptrail.ttl -= 1;
-            }
-            ptrail_geometry.vertices = _.reject( ptrail_geometry.vertices, ttl_expired );
             ptrail_geometry.verticesNeedUpdate = true;
+
+            // Can NOT figure out why the ptrail particles don't show up...
 
             for ( j = player_geometry.vertices.length - 1; j >= 0; --j ) {
                 particle2 = player_geometry.vertices[j];
@@ -257,12 +265,20 @@
 
         for ( j = player_geometry.vertices.length - 1; j >= 0; --j ) {
             player_piece = player_geometry.vertices[j];
-            player_piece.x += player_piece.velocity.x;
-            player_piece.y += player_piece.velocity.y;
+            player_piece.add( player_piece.velocity );
             player_piece.velocity.add( getAcceleration(player_piece, origin).divideScalar(20) ); // divide by 20 to reduce accel speed
         }
 
-        // ptrail_geometry.computeBoundingSphere();
+        // Remove expired particle trails
+        for ( k = ptrail_geometry.vertices.length - 1; k >= 0; --k ) {
+            ptrail = ptrail_geometry.vertices[k];
+            ptrail.ttl -= 1;
+
+            // If this ptrail particle has expired, remove it
+            if (ptrail.ttl === 0) {
+                ptrail_geometry.vertices.splice(k, 1);
+            }
+        }
 
         renderer.render( scene, camera );
     }
