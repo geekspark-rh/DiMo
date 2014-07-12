@@ -1,34 +1,38 @@
-/*global THREE, requestAnimationFrame, console, Stats*/
+/*global THREE, requestAnimationFrame, Stats*/
 /*jslint browser: true*/
 
 (function () {
 
-    var container, stats;
+    var container;
+    var stats;
 
-    var camera, scene, renderer, particle_geometry, particle_system, origin, particle_colors;
+    var camera;
+    var scene;
+    var renderer;
+    var particle_geometry;
+    var particle_system;
+    var origin;
+    var particle_colors;
+    var player_geometry;
+    var player_system;
+    var player_colors;
 
-    var explosion_scale = new THREE.Vector3( 50, 50, 50 );
-    var abs = Math.abs;
-    var rand = Math.random;
+    var max_velocity = 1;
+
+    var fps = 60;
+    var now;
+    var then = Date.now();
+    var interval = 1000 / fps;
+    var delta;
+
+    var g = 5.81;
 
     init();
     animate();
 
-    /**
-     * Add a new particle to the given geometry.
-     *
-     * @param {Geometry} geo The ThreeJS geometry to add the particle to.
-     * @param {Vector3} pos The initial position.
-     * @param {Vector3} vel The initial velocity.
-     */
-    function add_particle(geo, pos, vel) {
-        // create a particle with random
-        // position values, -250 -> 250
-        var particle = pos.clone();
-        particle.velocity = vel;
-
-        // add it to the geometry
-        geo.vertices.push(particle);
+    function set_fps(new_fps) {
+        fps = new_fps;
+        interval = 1000 / fps;
     }
 
     function init() {
@@ -36,6 +40,7 @@
         container = document.getElementById( 'container' );
 
         origin = new THREE.Vector3( 0, 0, 0 );
+        origin.mass = 10;
 
         //
 
@@ -46,20 +51,38 @@
 
         //
 
-        var particle_count = 1000;
+        var particle_count = 10;
+        var player_count = 4;
+        var particle_size = 250;
+        var particle_mass = 20;
+
+        var player_size = 500;
+        var player_mass = 50;
 
         particle_geometry = new THREE.Geometry();
+        player_geometry = new THREE.Geometry();
         particle_colors   = [];
+        player_colors   = [];
 
             // size         : 3,
             // vertexColors : THREE.VertexColors,
             // transparent  : false
         var particle_material = new THREE.ParticleSystemMaterial({
-            size            : 25,
-            // color           : 0xaaaaaa,
-            vertexColors    : THREE.VertexColors,
+            size            : particle_size,
+            color           : 0xaaaaaa,
+            // vertexColors    : THREE.VertexColors,
             blending        : THREE.AdditiveBlending,
-            sizeAttenuation : false,
+            sizeAttenuation : true,
+            transparent     : true,
+            map             : THREE.ImageUtils.loadTexture('img/particle.png')
+        });
+
+        var player_material = new THREE.ParticleSystemMaterial({
+            size            : player_size,
+            color           : 0xff7920,
+            // vertexColors    : THREE.VertexColors,
+            blending        : THREE.AdditiveBlending,
+            sizeAttenuation : true,
             transparent     : true,
             map             : THREE.ImageUtils.loadTexture('img/particle.png')
         });
@@ -73,34 +96,60 @@
         var color = new THREE.Color();
 
         var n = 1000, n2 = n / 2; // particles spread in the cube
+        var i;
 
-        var pos, vel;
         var colors = [];
         colors[0] = new THREE.Color(1, 0, 0);
         colors[1] = new THREE.Color(0, 1, 0);
         colors[2] = new THREE.Color(0, 0, 1);
         colors[3] = new THREE.Color(0, 1, 1);
 
-        for ( var i = 0; i < particle_count; ++i ) {
-            // create a particle with random
-            // position values, -250 -> 250
-            
-            pos = new THREE.Vector3( rand() * n - n2, rand() * n - n2, 0 );
-            vel = origin.clone().sub(pos).divide(explosion_scale); // initial velocity towards the origin
-
-            add_particle( particle_geometry, pos, vel);
+        for ( i = 0; i < particle_count; ++i ) {
+            var particle = new THREE.Vector3(
+                Math.random() * n - n2,
+                Math.random() * n - n2,
+                0
+            );
+            particle.velocity = new THREE.Vector3(0, 0, 0);
+            particle.mass = particle_mass;
+            // add it to the geometry
+            particle_geometry.vertices.push(particle);
 
             particle_colors.push(colors[i % 4]);
+        }
+
+        for ( i = 0; i < player_count; ++i ) {
+            // create a particle with random
+            // position values, -250 -> 250
+            var player = new THREE.Vector3(
+                Math.random() * n - n2,
+                Math.random() * n - n2,
+                0
+            );
+            player.velocity = new THREE.Vector3(0, 0, 0);
+            player.mass = player_mass;
+            player.player = i;
+            player_geometry.vertices.push(player);
+
+            color = new THREE.Color( 128, 128, 0 );
+            color.setRGB( 128, 128, 0 );
+            player_colors[i] = color;
         }
 
         particle_geometry.computeBoundingSphere();
         particle_geometry.colors = particle_colors;
 
+        player_geometry.computeBoundingSphere();
+        player_geometry.colors = player_colors;
+
         //
 
         particle_system = new THREE.ParticleSystem( particle_geometry, particle_material );
+        player_system = new THREE.ParticleSystem( player_geometry, player_material );
         particle_system.sortParticles = true;
+        player_system.sortParticles = true;
         scene.add( particle_system );
+        scene.add( player_system );
 
         //
 
@@ -138,38 +187,62 @@
 
         requestAnimationFrame( animate );
 
-        render();
-        stats.update();
+        now = Date.now();
+        delta = now - then;
 
+        if (delta > interval) {
+            then = now - (delta % interval);
+            render();
+            stats.update();
+        }
+
+    }
+
+
+    function getAcceleration(p1, p2) {
+        var n = g * p1.mass;
+        var r_sqrd = 2 * p2.distanceTo(p1);
+        var u = p2.clone()
+            .sub(p1)
+            .normalize()
+            .multiply( new THREE.Vector3( n, n, 0 ) )
+            .divideScalar(r_sqrd)
+            .clampScalar(-max_velocity, max_velocity);
+        return u;
     }
 
     function render() {
 
-        // tween particle position from current to origin
-
-        // new TWEEN.Tween( particle.position )
-        // .delay( delay )
-        // .to( { x: Math.random() * 4000 - 2000, y: Math.random() * 1000 - 500, z: Math.random() * 4000 - 2000 }, 10000 )
-        // .start();
-        // TWEEN.update();
-
-        // for(var i = 0; i < particle_system.geometry.getAttribute('position').array.length; i++ ) {
-        //     particle_system.geometry.getAttribute('position').array[i] += 1;
-        // }
+        var j;
+        var i;
         var particle;
-        for ( var i = particle_system.geometry.vertices.length - 1; i >= 0; --i ) {
+        var particle2;
+        var player_piece;
+
+        for ( i = particle_system.geometry.vertices.length - 1; i >= 0; --i ) {
             particle = particle_system.geometry.vertices[i];
             particle.x += particle.velocity.x;
             particle.y += particle.velocity.y;
-            particle.velocity.x += Math.random() * 1 - 0.5;
-            particle.velocity.y += Math.random() * 1 - 0.5;
+            for ( j = player_system.geometry.vertices.length - 1; j >= 0; --j ) {
+                particle2 = player_system.geometry.vertices[j];
+                if (particle == particle2) {
+                    continue;
+                }
+                if (particle.player > 0) {
+                    continue;
+                }
+                particle.velocity.add( getAcceleration(particle, particle2) );
+            }
         }
-        particle_system.geometry.__dirtyVertices = true;
-        particle_system.geometry.verticesNeedUpdate = true;
+
+        for ( j = player_system.geometry.vertices.length - 1; j >= 0; --j ) {
+            player_piece = player_system.geometry.vertices[j];
+            player_piece.x += player_piece.velocity.x;
+            player_piece.y += player_piece.velocity.y;
+            player_piece.velocity.add( getAcceleration(player_piece, origin).divideScalar(20) );
+        }
 
         renderer.render( scene, camera );
     }
-
-    window.particle_system = particle_system;
 
 }());
