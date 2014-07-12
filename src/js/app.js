@@ -1,4 +1,4 @@
-/*global THREE, requestAnimationFrame, Stats*/
+/*global THREE, requestAnimationFrame, Stats, _*/
 /*jslint browser: true*/
 
 (function () {
@@ -11,6 +11,8 @@
     var renderer;
     var particle_geometry;
     var particle_system;
+    var ptrail_geometry;
+    var ptrail_system;
     var origin;
     var particle_colors;
     var player_geometry;
@@ -29,6 +31,10 @@
 
     init();
     animate();
+
+    function ttl_expired(ptrail) {
+        return ptrail.ttl <= 0;
+    }
 
     function set_fps(new_fps) {
         fps = new_fps;
@@ -60,6 +66,7 @@
         var player_mass = 50;
 
         particle_geometry = new THREE.Geometry();
+        ptrail_geometry = new THREE.Geometry();
         player_geometry = new THREE.Geometry();
         particle_colors   = [];
         player_colors   = [];
@@ -67,6 +74,15 @@
         var particle_material = new THREE.ParticleSystemMaterial({
             size            : particle_size,
             vertexColors    : THREE.VertexColors,
+            blending        : THREE.AdditiveBlending,
+            sizeAttenuation : true,
+            transparent     : true,
+            map             : THREE.ImageUtils.loadTexture('img/particle.png')
+        });
+
+        var ptrail_material = new THREE.ParticleSystemMaterial({
+            size            : particle_size / 2,
+            color           : 0xcccccc,
             blending        : THREE.AdditiveBlending,
             sizeAttenuation : true,
             transparent     : true,
@@ -81,14 +97,6 @@
             transparent     : true,
             map             : THREE.ImageUtils.loadTexture('img/particle.png')
         });
-
-        // particle_geometry.addAttribute( 'vertices', new Float32Array( particles * 3 ), 3 );
-        // particle_geometry.addAttribute( 'color', new Float32Array( particles * 3 ), 3 );
-
-        // var positions = particle_geometry.getAttribute( 'position' ).array;
-        // var colors = particle_geometry.getAttribute( 'color' ).array;
-
-        var color = new THREE.Color();
 
         var n = 1000, n2 = n / 2; // particles spread in the cube
         var i;
@@ -132,16 +140,20 @@
         particle_geometry.computeBoundingSphere();
         particle_geometry.colors = particle_colors;
 
+        ptrail_geometry.computeBoundingSphere();
+
         player_geometry.computeBoundingSphere();
         player_geometry.colors = player_colors;
 
         //
 
         particle_system = new THREE.ParticleSystem( particle_geometry, particle_material );
+        ptrail_system = new THREE.ParticleSystem( ptrail_geometry, ptrail_material );
         player_system = new THREE.ParticleSystem( player_geometry, player_material );
         particle_system.sortParticles = true;
         player_system.sortParticles = true;
         scene.add( particle_system );
+        scene.add( ptrail_system );
         scene.add( player_system );
 
         //
@@ -206,34 +218,51 @@
 
     function render() {
 
-        var j;
         var i;
+        var j;
+        var k;
         var particle;
         var particle2;
         var player_piece;
+        var ptrail;
+        var new_ptrail;
 
-        for ( i = particle_system.geometry.vertices.length - 1; i >= 0; --i ) {
-            particle = particle_system.geometry.vertices[i];
+        for ( i = particle_geometry.vertices.length - 1; i >= 0; --i ) {
+            particle = particle_geometry.vertices[i];
+
+            // Update the particle's position 
             particle.x += particle.velocity.x;
             particle.y += particle.velocity.y;
-            for ( j = player_system.geometry.vertices.length - 1; j >= 0; --j ) {
-                particle2 = player_system.geometry.vertices[j];
-                if (particle == particle2) {
-                    continue;
+
+            // Add a particle trail
+            new_ptrail = new THREE.Vector3( particle.x, particle.y, particle.z );
+            new_ptrail.ttl = 120; // frames
+            ptrail_geometry.vertices.push(new_ptrail);
+
+            // Remove expired particle trails
+            for ( k = ptrail_geometry.vertices.length - 1; k >= 0; --k ) {
+                ptrail = ptrail_geometry.vertices[k];
+                ptrail.ttl -= 1;
+            }
+            ptrail_geometry.vertices = _.reject( ptrail_geometry.vertices, ttl_expired );
+            ptrail_geometry.verticesNeedUpdate = true;
+
+            for ( j = player_geometry.vertices.length - 1; j >= 0; --j ) {
+                particle2 = player_geometry.vertices[j];
+                if ( particle !== particle2 && !particle.player ) {
+                    particle.velocity.add( getAcceleration(particle, particle2) );
                 }
-                if (particle.player > 0) {
-                    continue;
-                }
-                particle.velocity.add( getAcceleration(particle, particle2) );
             }
         }
 
-        for ( j = player_system.geometry.vertices.length - 1; j >= 0; --j ) {
-            player_piece = player_system.geometry.vertices[j];
+        for ( j = player_geometry.vertices.length - 1; j >= 0; --j ) {
+            player_piece = player_geometry.vertices[j];
             player_piece.x += player_piece.velocity.x;
             player_piece.y += player_piece.velocity.y;
-            player_piece.velocity.add( getAcceleration(player_piece, origin).divideScalar(20) );
+            player_piece.velocity.add( getAcceleration(player_piece, origin).divideScalar(20) ); // divide by 20 to reduce accel speed
         }
+
+        // ptrail_geometry.computeBoundingSphere();
 
         renderer.render( scene, camera );
     }
