@@ -64,13 +64,9 @@
         particle_colors   = [];
         player_colors   = [];
 
-            // size         : 3,
-            // vertexColors : THREE.VertexColors,
-            // transparent  : false
         var particle_material = new THREE.ParticleSystemMaterial({
             size            : particle_size,
-            color           : 0xaaaaaa,
-            // vertexColors    : THREE.VertexColors,
+            vertexColors    : THREE.VertexColors,
             blending        : THREE.AdditiveBlending,
             sizeAttenuation : true,
             transparent     : true,
@@ -79,8 +75,7 @@
 
         var player_material = new THREE.ParticleSystemMaterial({
             size            : player_size,
-            color           : 0xff7920,
-            // vertexColors    : THREE.VertexColors,
+            vertexColors    : THREE.VertexColors,
             blending        : THREE.AdditiveBlending,
             sizeAttenuation : true,
             transparent     : true,
@@ -99,10 +94,10 @@
         var i;
 
         var colors = [];
-        colors[0] = new THREE.Color(1, 0, 0);
-        colors[1] = new THREE.Color(0, 1, 0);
-        colors[2] = new THREE.Color(0, 0, 1);
-        colors[3] = new THREE.Color(0, 1, 1);
+        colors[0] = new THREE.Color(0.5, 0.0, 0.0);
+        colors[1] = new THREE.Color(0.0, 0.5, 0.0);
+        colors[2] = new THREE.Color(0.0, 0.0, 0.5);
+        colors[3] = new THREE.Color(0.0, 0.5, 0.5);
 
         for ( i = 0; i < particle_count; ++i ) {
             var particle = new THREE.Vector3(
@@ -131,9 +126,7 @@
             player.player = i;
             player_geometry.vertices.push(player);
 
-            color = new THREE.Color( 128, 128, 0 );
-            color.setRGB( 128, 128, 0 );
-            player_colors[i] = color;
+            player_colors.push(colors[i % 4]);
         }
 
         particle_geometry.computeBoundingSphere();
