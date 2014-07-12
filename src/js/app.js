@@ -3,9 +3,19 @@
 
 (function () {
 
-    var container, stats;
+    var container;
+    var stats;
 
-    var camera, scene, renderer, particle_geometry, particle_system, origin, particle_colors, player_geometry, player_system, player_colors;
+    var camera;
+    var scene;
+    var renderer;
+    var particle_geometry;
+    var particle_system;
+    var origin;
+    var particle_colors;
+    var player_geometry;
+    var player_system;
+    var player_colors;
 
     var max_velocity = 1;
 
@@ -16,6 +26,7 @@
     var delta;
 
     var g = 5.81;
+
     init();
     animate();
 
@@ -23,13 +34,13 @@
         fps = new_fps;
         interval = 1000 / fps;
     }
-    window.set_fps = set_fps;
 
     function init() {
 
         container = document.getElementById( 'container' );
 
         origin = new THREE.Vector3( 0, 0, 0 );
+        origin.mass = 10;
 
         //
 
@@ -43,10 +54,10 @@
         var particle_count = 10;
         var player_count = 4;
         var particle_size = 250;
-        var particle_mass = 40;
+        var particle_mass = 20;
 
         var player_size = 500;
-        var player_mass = 100;
+        var player_mass = 50;
 
         particle_geometry = new THREE.Geometry();
         player_geometry = new THREE.Geometry();
@@ -187,20 +198,26 @@
 
 
     function getAcceleration(P1, P2) {
+        var n = g * P1.mass;
         var r_sqrd = 2 * P2.distanceTo(P1);
         var u = P2.clone()
-        .sub(P1)
-        .normalize()
-        .multiply( new THREE.Vector3( -g * P1.mass, -g * P1.mass, 0 ) )
-        .divideScalar(r_sqrd)
-        .clampScalar(-max_velocity, max_velocity);
+            .sub(P1)
+            .normalize()
+            .multiply( new THREE.Vector3( n, n, 0 ) )
+            .divideScalar(r_sqrd)
+            .clampScalar(-max_velocity, max_velocity);
         return u;
     }
 
     function render() {
 
-        var particle, particle2, j, player_piece;
-        for ( var i = particle_system.geometry.vertices.length - 1; i >= 0; --i ) {
+        var j;
+        var i;
+        var particle;
+        var particle2;
+        var player_piece;
+
+        for ( i = particle_system.geometry.vertices.length - 1; i >= 0; --i ) {
             particle = particle_system.geometry.vertices[i];
             particle.x += particle.velocity.x;
             particle.y += particle.velocity.y;
@@ -212,25 +229,21 @@
                 if (particle.player > 0) {
                     continue;
                 }
-                var a12 = getAcceleration(particle, particle2);
-
-                particle.velocity.x -= a12.x;
-                particle.velocity.y -= a12.y;
+                particle.velocity.add( getAcceleration(particle, particle2) );
             }
         }
 
-        // for ( j = player_system.geometry.vertices.length - 1; j >= 0; --j ) {
-        //     player_piece = player_system.geometry.vertices[j];
-        //     player_piece.x += player_piece.velocity.x;
-        //     player_piece.y += player_piece.velocity.y;
-        //     player_piece.velocity.x += (Math.random() - 0.5) * 0.2;
-        //     player_piece.velocity.y += (Math.random() - 0.5) * 0.2;
-        // }
+        for ( j = player_system.geometry.vertices.length - 1; j >= 0; --j ) {
+            player_piece = player_system.geometry.vertices[j];
+            player_piece.x += player_piece.velocity.x;
+            player_piece.y += player_piece.velocity.y;
+            player_piece.velocity.add( getAcceleration(player_piece, origin).divideScalar(20) );
+            if (j === 1) {
+            debugger;
+            }
+        }
 
         renderer.render( scene, camera );
     }
-
-    window.particle_system = particle_system;
-    window.player_system = player_system;
 
 }());
