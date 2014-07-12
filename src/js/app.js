@@ -113,6 +113,7 @@
                 Math.random() * n - n2,
                 0
             );
+            player.velocity = new THREE.Vector3(0, 0, 0);
             player.mass = player_mass;
             player.player = i;
             player_geometry.vertices.push(player);
@@ -186,7 +187,7 @@
 
 
     function getAcceleration(P1, P2) {
-        var r_sqrd = P2.distanceToSquared(P1);
+        var r_sqrd = 2 * P2.distanceTo(P1);
         var u = P2.clone()
         .sub(P1)
         .normalize()
