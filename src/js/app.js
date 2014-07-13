@@ -51,9 +51,9 @@
 
         //
 
-        var particle_count = 10;
+        var particle_count = 100;
         var player_count = 4;
-        var particle_size = 250;
+        var particle_size = 100;
         var particle_mass = 20;
 
         var player_size = 500;
@@ -204,6 +204,13 @@
         return u;
     }
 
+    function isTouching(p1, player) {
+        var distance = p1.distanceTo(player);
+        if (distance < 50) {
+            p1.velocity.x = player.velocity.x;
+            p1.velocity.y = player.velocity.y;
+        }
+    }
     function render() {
 
         var j;
@@ -232,16 +239,17 @@
                     continue;
                 }
                 particle.velocity.add( getAcceleration(particle, particle2) );
+                isTouching(particle, particle2);
             }
         }
 
         for ( j = player_system.geometry.vertices.length - 1; j >= 0; --j ) {
+            
             player_piece = player_system.geometry.vertices[j];
             player_piece.x += player_piece.velocity.x;
             player_piece.y += player_piece.velocity.y;
             player_piece.velocity.add( getAcceleration(player_piece, origin).divideScalar(20) );
         }
-
         renderer.render( scene, camera );
     }
 
