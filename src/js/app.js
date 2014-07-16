@@ -12,9 +12,13 @@ var particle_geometry;
 var particle_system;
 var particle_colors;
 
-var player_geometry;
-var player_system;
-var player_colors;
+var user_geometry;
+var user_system;
+var user_colors;
+
+var user_outer_geometry;
+var user_outer_system;
+var user_outer_colors;
 
 var origin;
 
@@ -71,8 +75,8 @@ function add_trail_emitter(source, color) {
         // opacityMiddle: 0.5,
         opacityEnd: 0,
 
-        particleCount: 100,
-        angleAlignVelocity: 1
+        particleCount: 200,
+        angleAlignVelocity: 0
     });
 
     ptrail_group.addEmitter( ptrail_emitter );
@@ -101,18 +105,20 @@ function init() {
 
     //
 
-    var particle_count = 200;
-    var particle_size = 90;
+    var particle_count = 20;
+    var particle_size = 150;
     var particle_mass = 2;
 
-    var player_count = 4;
-    var player_size = 500;
-    var player_mass = 5;
+    var user_count = 4;
+    var user_size = 800;
+    var user_mass = 5;
 
     particle_geometry = new THREE.Geometry();
-    player_geometry = new THREE.Geometry();
+    user_geometry = new THREE.Geometry();
+    user_outer_geometry = new THREE.Geometry();
+
     particle_colors   = [];
-    player_colors   = [];
+    user_colors   = [];
 
     // THREE.NoBlending
     // THREE.NormalBlending
@@ -130,14 +136,24 @@ function init() {
         map             : THREE.ImageUtils.loadTexture('img/particle.png')
     });
 
-    var player_material = new THREE.ParticleSystemMaterial({
-        size            : player_size,
+    var user_material = new THREE.ParticleSystemMaterial({
+        size            : user_size,
         vertexColors    : THREE.VertexColors,
         blending        : THREE.AdditiveBlending,
         sizeAttenuation : true,
         transparent     : true,
         fog             : false,
-        map             : THREE.ImageUtils.loadTexture('img/particle.png')
+        map             : THREE.ImageUtils.loadTexture('img/solid-particle.png')
+    });
+
+    var user_outer_material = new THREE.ParticleSystemMaterial({
+        size            : user_size,
+        // vertexColors    : THREE.VertexColors,
+        blending        : THREE.AdditiveBlending,
+        sizeAttenuation : true,
+        transparent     : true,
+        fog             : false,
+        map             : THREE.ImageUtils.loadTexture('img/token-gloss.png')
     });
 
     var n = 1000, n2 = n / 2; // particles spread in the cube
@@ -145,7 +161,6 @@ function init() {
 
     var colors = [];
 
-    debugger;
     colors[0] = (new THREE.Color(185, 114, 191)).multiplyScalar(1/255);
     colors[1] = (new THREE.Color(114, 191, 128)).multiplyScalar(1/255);
     colors[2] = (new THREE.Color(124, 114, 191)).multiplyScalar(1/255);
@@ -164,42 +179,51 @@ function init() {
         );
         particle.mass = particle_mass;
         particle.trail = add_trail_emitter(particle, colors[i % 4]);
-        // add it to the geometry
         particle_geometry.vertices.push(particle);
 
         particle_colors.push(colors[i % 4]);
     }
 
-    for ( i = 0; i < player_count; ++i ) {
-        // create a particle with random
-        // position values, -250 -> 250
-        var player = new THREE.Vector3(
-            (Math.random() * n - n2)/10,
-            (Math.random() * n - n2)/10,
+    for ( i = 0; i < user_count; ++i ) {
+        var user = new THREE.Vector3(
+            (Math.random() * n - n2),
+            (Math.random() * n - n2),
             0
         );
-        player.velocity = new THREE.Vector3(0, 0, 0);
-        player.mass = player_mass;
-        player.player = i;
-        player_geometry.vertices.push(player);
+        user.velocity = new THREE.Vector3(0, 0, 0);
+        user.mass = user_mass;
+        user.id = i;
+        user_geometry.vertices.push(user);
 
-        player_colors.push(colors[i % 4]);
+        user_colors.push(colors[i % 4]);
+
+        var user_outer = user.clone();
+        user_outer.mass = user_mass;
+        user_outer.id = i;
+        user_outer_geometry.vertices.push(user_outer);
     }
 
     particle_geometry.computeBoundingSphere();
     particle_geometry.colors = particle_colors;
 
-    player_geometry.computeBoundingSphere();
-    player_geometry.colors = player_colors;
+    user_geometry.computeBoundingSphere();
+    user_geometry.colors = user_colors;
+
+    user_outer_geometry.computeBoundingSphere();
 
     //
 
     particle_system = new THREE.ParticleSystem( particle_geometry, particle_material );
-    player_system = new THREE.ParticleSystem( player_geometry, player_material );
+    user_system = new THREE.ParticleSystem( user_geometry, user_material );
+    user_outer_system = new THREE.ParticleSystem( user_outer_geometry, user_outer_material );
+
     particle_system.sortParticles = true;
-    player_system.sortParticles = true;
+    user_system.sortParticles = true;
+    user_outer_system.sortParticles = true;
+
     scene.add( particle_system );
-    scene.add( player_system );
+    scene.add( user_system );
+    scene.add( user_outer_system );
 
     //
 
@@ -267,7 +291,8 @@ function render() {
     var j;
     var particle;
     var particle2;
-    var player_piece;
+    var user_piece;
+    var user_outer_piece;
 
     // Increment and wrap fmod
     fmod++;
@@ -285,18 +310,19 @@ function render() {
         // Update the particle's trail display
         particle.trail.group.tick( 1 / fps );
 
-        for ( j = player_geometry.vertices.length - 1; j >= 0; --j ) {
-            particle2 = player_geometry.vertices[j];
-            if ( particle !== particle2 && !particle.player ) {
+        for ( j = user_geometry.vertices.length - 1; j >= 0; --j ) {
+            particle2 = user_geometry.vertices[j];
+            if ( particle !== particle2 && !particle.id ) {
                 particle.velocity.add( getAcceleration(particle, particle2) );
             }
         }
     }
 
-    for ( j = player_geometry.vertices.length - 1; j >= 0; --j ) {
-        player_piece = player_geometry.vertices[j];
-        player_piece.add( player_piece.velocity );
-        player_piece.velocity.add( getAcceleration(player_piece, origin).divideScalar(20) ); // divide by 20 to reduce accel speed
+    for ( j = user_geometry.vertices.length - 1; j >= 0; --j ) {
+        user_piece = user_geometry.vertices[j];
+        user_piece.add(user_piece.velocity);
+        user_outer_geometry.vertices[j].copy(user_piece);
+        user_piece.velocity.add( getAcceleration(user_piece, origin).divideScalar(20) ); // divide by 20 to reduce accel speed
     }
 
     renderer.render( scene, camera );
