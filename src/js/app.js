@@ -45,8 +45,8 @@ window.set_fps = set_fps;
 // Create particle group and emitter
 function add_trail_emitter(source, color) {
     var ptrail_group = new SPE.Group({
-        texture: THREE.ImageUtils.loadTexture('img/particle.png'),
-        maxAge: 1
+        texture: THREE.ImageUtils.loadTexture('img/bullet.png'),
+        maxAge: 2
     });
 
     var ptrail_emitter = new SPE.Emitter({
@@ -59,17 +59,20 @@ function add_trail_emitter(source, color) {
         speed: 0,
 
         colorStart: color,
-        // colorStartSpread: new THREE.Vector3(10, 10, 10),
+        colorStartSpread: new THREE.Vector3(100, 100, 100),
         // colorEnd: new THREE.Color('white'),
-        sizeStart: 100,
-        // sizeEnd: 0,
 
-        opacityStart: 0.4,
+        sizeStart: 150,
+        sizeMiddle: 250,
+        sizeEnd: 0,
+
+        blending: THREE.AdditiveBlending,
+        opacityStart: 0.35,
         // opacityMiddle: 0.5,
         opacityEnd: 0,
 
         particleCount: 100,
-        angleAlignVelocity: 0
+        angleAlignVelocity: 1
     });
 
     ptrail_group.addEmitter( ptrail_emitter );
@@ -87,7 +90,7 @@ function init() {
     container = document.getElementById( 'container' );
 
     origin = new THREE.Vector3( 0, 0, 0 );
-    origin.mass = 10;
+    origin.mass = 30;
 
     //
 
@@ -98,9 +101,9 @@ function init() {
 
     //
 
-    var particle_count = 100;
-    var particle_size = 100;
-    var particle_mass = 1;
+    var particle_count = 200;
+    var particle_size = 90;
+    var particle_mass = 2;
 
     var player_count = 4;
     var player_size = 500;
@@ -111,12 +114,19 @@ function init() {
     particle_colors   = [];
     player_colors   = [];
 
+    // THREE.NoBlending
+    // THREE.NormalBlending
+    // THREE.AdditiveBlending
+    // THREE.SubtractiveBlending
+    // THREE.MultiplyBlending
+
     var particle_material = new THREE.ParticleSystemMaterial({
         size            : particle_size,
         vertexColors    : THREE.VertexColors,
         blending        : THREE.AdditiveBlending,
         sizeAttenuation : true,
         transparent     : true,
+        fog             : false,
         map             : THREE.ImageUtils.loadTexture('img/particle.png')
     });
 
@@ -126,6 +136,7 @@ function init() {
         blending        : THREE.AdditiveBlending,
         sizeAttenuation : true,
         transparent     : true,
+        fog             : false,
         map             : THREE.ImageUtils.loadTexture('img/particle.png')
     });
 
@@ -133,10 +144,12 @@ function init() {
     var i;
 
     var colors = [];
-    colors[0] = new THREE.Color(0.7, 0.0, 0.0);
-    colors[1] = new THREE.Color(0.0, 0.7, 0.0);
-    colors[2] = new THREE.Color(0.0, 0.0, 0.7);
-    colors[3] = new THREE.Color(0.0, 0.7, 0.7);
+
+    debugger;
+    colors[0] = (new THREE.Color(185, 114, 191)).multiplyScalar(1/255);
+    colors[1] = (new THREE.Color(114, 191, 128)).multiplyScalar(1/255);
+    colors[2] = (new THREE.Color(124, 114, 191)).multiplyScalar(1/255);
+    colors[3] = (new THREE.Color(191, 129, 114)).multiplyScalar(1/255);
 
     for ( i = 0; i < particle_count; ++i ) {
         var particle = new THREE.Vector3(
@@ -144,7 +157,11 @@ function init() {
             Math.random() * n - n2,
             0
         );
-        particle.velocity = new THREE.Vector3(0, 0, 0);
+        particle.velocity = new THREE.Vector3(
+            Math.random() * n / n2,
+            Math.random() * n / n2,
+            0
+        );
         particle.mass = particle_mass;
         particle.trail = add_trail_emitter(particle, colors[i % 4]);
         // add it to the geometry
@@ -157,8 +174,8 @@ function init() {
         // create a particle with random
         // position values, -250 -> 250
         var player = new THREE.Vector3(
-            Math.random() * n - n2,
-            Math.random() * n - n2,
+            (Math.random() * n - n2)/10,
+            (Math.random() * n - n2)/10,
             0
         );
         player.velocity = new THREE.Vector3(0, 0, 0);
@@ -233,7 +250,7 @@ function animate() {
 
 
 function getAcceleration(p1, p2) {
-    var n = g * p1.mass;
+    var n = g * p1.mass * p2.mass / 2;
     var r_sqrd = 2 * p2.distanceTo(p1);
     var u = p2.clone()
     .sub(p1)
@@ -263,7 +280,7 @@ function render() {
         particle.add( particle.velocity );
 
         // Update the particle's trail's position
-        particle.trail.emitter.position = particle.clone();
+        // particle.trail.emitter.position = particle.clone();
 
         // Update the particle's trail display
         particle.trail.group.tick( 1 / fps );
