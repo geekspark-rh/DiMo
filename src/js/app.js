@@ -12,8 +12,8 @@ var particle_geometry;
 var particle_system;
 var particle_colors;
 
-var particle_count = 1e3;
-var particle_size = 100;
+var particle_count = 1e5;
+var particle_size = 5;
 var particle_mass = 2;
 
 var origin;
@@ -24,6 +24,10 @@ var then = Date.now();
 var interval = 1000 / fps;
 var delta;
 
+var max_velocity = 20;
+
+var WIDTH = window.innerWidth;
+var HEIGHT = window.innerHeight;
 var g = 5.81;
 
 init();
@@ -63,13 +67,15 @@ function init() {
     // THREE.MultiplyBlending
 
     var attributes = {
-        size:        { type: 'f', value: null },
-        customColor: { type: 'c', value: null }
+        size         : { type : 'f',  value : null },
+        customColor  : { type : 'c',  value : null },
+        acceleration : { type : 'v3', value : null },
+        velocity     : { type : 'v3', value : null }
     };
 
     var uniforms = {
         color:     { type: "c", value: new THREE.Color( 0xffffff ) },
-        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particle.png" ) }
+        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/circle-shadow.png" ) }
     };
 
     var particle_material = new THREE.ShaderMaterial( {
@@ -99,9 +105,11 @@ function init() {
 
     //
 
-    var positions    = new Float32Array( particle_count * 3 );
-    var values_color = new Float32Array( particle_count * 3 );
-    var values_size  = new Float32Array( particle_count );
+    var positions     = new Float32Array( particle_count * 3 );
+    var values_color  = new Float32Array( particle_count * 3 );
+    var values_size   = new Float32Array( particle_count );
+    var accelerations = new Float32Array( particle_count * 3 );
+    var velocities    = new Float32Array( particle_count * 3 );
 
     var color = new THREE.Color();
 
@@ -109,8 +117,8 @@ function init() {
 
         values_size[ v ] = particle_size;
 
-        positions[ v * 3 + 0 ] = ( Math.random() * 2 - 1 ) * particle_count;
-        positions[ v * 3 + 1 ] = ( Math.random() * 2 - 1 ) * particle_count;
+        positions[ v * 3 + 0 ] = ( Math.random() * 2 - 1 ) * WIDTH;
+        positions[ v * 3 + 1 ] = ( Math.random() * 2 - 1 ) * HEIGHT;;
         positions[ v * 3 + 2 ] = 0; // z is fixed
 
         color.setHSL( v / particle_count, 1.0, 0.5 );
@@ -119,11 +127,21 @@ function init() {
         values_color[ v * 3 + 1 ] = color.g;
         values_color[ v * 3 + 2 ] = color.b;
 
+        accelerations[ v * 3 + 0 ] = ( Math.random() * 1 - 0.5 );
+        accelerations[ v * 3 + 1 ] = ( Math.random() * 1 - 0.5 );
+        accelerations[ v * 3 + 2 ] = 0; // z is fixed
+
+        velocities[ v * 3 + 0 ] = ( Math.random() * 1 - 0.5 );
+        velocities[ v * 3 + 1 ] = ( Math.random() * 1 - 0.5 );
+        velocities[ v * 3 + 2 ] = 0; // z is fixed
+
     }
 
-    particle_geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-    particle_geometry.addAttribute( 'customColor', new THREE.BufferAttribute( values_color, 3 ) );
-    particle_geometry.addAttribute( 'size', new THREE.BufferAttribute( values_size, 1 ) );
+    particle_geometry.addAttribute( 'position'     , new THREE.BufferAttribute( positions     , 3 ) );
+    particle_geometry.addAttribute( 'customColor'  , new THREE.BufferAttribute( values_color  , 3 ) );
+    particle_geometry.addAttribute( 'size'         , new THREE.BufferAttribute( values_size   , 1 ) );
+    particle_geometry.addAttribute( 'acceleration' , new THREE.BufferAttribute( accelerations , 3 ) );
+    particle_geometry.addAttribute( 'velocity'     , new THREE.BufferAttribute( velocities    , 3 ) );
 
     particle_system = new THREE.PointCloud( particle_geometry, particle_material );
 
@@ -135,7 +153,7 @@ function init() {
 
     renderer = new THREE.WebGLRenderer();
     renderer.setClearColor( 0x000000, 1 );
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( WIDTH, HEIGHT );
 
     container.appendChild( renderer.domElement );
 
@@ -180,7 +198,7 @@ function animate() {
 
 
 function getAcceleration(p1, p2) {
-    var n = g * p1.mass * p2.mass / 2;
+    var n = g;
     var r_sqrd = 2 * p2.distanceTo(p1);
     var u = p2.clone()
     .sub(p1)
@@ -193,16 +211,35 @@ function getAcceleration(p1, p2) {
 
 function render() {
 
-    var time = Date.now() * 0.005;
-    var size = particle_geometry.attributes.size.array;
+    var time  = Date.now() * 0.005;
+    var size  = particle_geometry.attributes.size.array;
+    var vel   = particle_geometry.attributes.velocity.array;
+    var acc   = particle_geometry.attributes.acceleration.array;
+    var pos   = particle_geometry.attributes.position.array;
+    var i3    = 0;
 
     for( var i = 0; i < particle_count; i++ ) {
 
+        i3 = i * 3;
+
         size[ i ] = particle_size * ( 2 + Math.sin( 0.1 * i + time ) );
+
+        // Add acc to vel
+        vel[i3 + 0] += acc[i3 + 0];
+        vel[i3 + 1] += acc[i3 + 1];
+        vel[i3 + 2] += acc[i3 + 2];
+
+        // Add vel to pos
+        pos[i3 + 0] += vel[i3 + 0];
+        pos[i3 + 1] += vel[i3 + 1];
+        pos[i3 + 2] += vel[i3 + 2];
 
     }
 
     particle_geometry.attributes.size.needsUpdate = true;
+    particle_geometry.attributes.position.needsUpdate = true;
+    particle_geometry.attributes.velocity.needsUpdate = true;
+    particle_geometry.attributes.acceleration.needsUpdate = true;
 
     renderer.render( scene, camera );
 }
