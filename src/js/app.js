@@ -12,20 +12,11 @@ var particle_geometry;
 var particle_system;
 var particle_colors;
 
-var user_geometry;
-var user_system;
-var user_colors;
-
-var user_outer_geometry;
-var user_outer_system;
+var particle_count = 1e3;
+var particle_size = 100;
+var particle_mass = 2;
 
 var origin;
-
-// fmod increments every frame, wraps back to zero every second, to allow
-// performing certain operations every 2nd frame, every 5th frame, etc
-var fmod = 0;
-
-var max_velocity = 1;
 
 var fps = 60;
 var now;
@@ -61,20 +52,9 @@ function init() {
 
     //
 
-    var particle_count = 20;
-    var particle_size = 150;
-    var particle_mass = 2;
-
-    var user_count = 4;
-    var user_size = 800;
-    var user_mass = 5;
-
-    particle_geometry = new THREE.Geometry();
-    user_geometry = new THREE.Geometry();
-    user_outer_geometry = new THREE.Geometry();
+    particle_geometry = new THREE.BufferGeometry();
 
     particle_colors   = [];
-    user_colors   = [];
 
     // THREE.NoBlending
     // THREE.NormalBlending
@@ -82,20 +62,29 @@ function init() {
     // THREE.SubtractiveBlending
     // THREE.MultiplyBlending
 
+    var attributes = {
+        size:        { type: 'f', value: null },
+        customColor: { type: 'c', value: null }
+    };
+
     var uniforms = {
-        time: { type: "f", value: 1.0 },
-        resolution: { type: "v2", value: new THREE.Vector2() }
+        color:     { type: "c", value: new THREE.Color( 0xffffff ) },
+        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particle.png" ) }
     };
 
     var particle_material = new THREE.ShaderMaterial( {
 
         uniforms       : uniforms,
+        attributes     : attributes,
         vertexShader   : document.getElementById( 'vertexShader' ).textContent,
-        fragmentShader : document.getElementById( 'fragmentShader' ).textContent
+        fragmentShader : document.getElementById( 'fragmentShader' ).textContent,
+        blending       : THREE.AdditiveBlending,
+        depthTest      : false,
+        transparent    : true
 
     } );
 
-    // var particle_material = new THREE.ParticleSystemMaterial({
+    // var particle_material = new THREE.PointCloudMaterial({
     //     size            : particle_size,
     //     vertexColors    : THREE.VertexColors,
     //     blending        : THREE.AdditiveBlending,
@@ -105,93 +94,42 @@ function init() {
     //     map             : THREE.ImageUtils.loadTexture('img/particle.png')
     // });
 
-    var user_material = new THREE.ParticleSystemMaterial({
-        size            : user_size,
-        vertexColors    : THREE.VertexColors,
-        blending        : THREE.AdditiveBlending,
-        sizeAttenuation : true,
-        transparent     : true,
-        fog             : false,
-        map             : THREE.ImageUtils.loadTexture('img/solid-particle.png')
-    });
-
-    var user_outer_material = new THREE.ParticleSystemMaterial({
-        size            : user_size,
-        // vertexColors    : THREE.VertexColors,
-        blending        : THREE.AdditiveBlending,
-        sizeAttenuation : true,
-        transparent     : true,
-        fog             : false,
-        map             : THREE.ImageUtils.loadTexture('img/token-gloss.png')
-    });
-
     var n = 1000, n2 = n / 2; // particles spread in the cube
     var i;
 
-    var colors = [];
-
-    colors[0] = (new THREE.Color(185, 114, 191)).multiplyScalar(1/255);
-    colors[1] = (new THREE.Color(114, 191, 128)).multiplyScalar(1/255);
-    colors[2] = (new THREE.Color(124, 114, 191)).multiplyScalar(1/255);
-    colors[3] = (new THREE.Color(191, 129, 114)).multiplyScalar(1/255);
-
-    for ( i = 0; i < particle_count; ++i ) {
-        var particle = new THREE.Vector3(
-            Math.random() * n - n2,
-            Math.random() * n - n2,
-            0
-        );
-        particle.velocity = new THREE.Vector3(
-            0, //Math.random() * n / n2,
-            0, //Math.random() * n / n2,
-            0
-        );
-        particle.mass = particle_mass;
-        particle_geometry.vertices.push(particle);
-
-        particle_colors.push(colors[i % 4]);
-    }
-
-    for ( i = 0; i < user_count; ++i ) {
-        var user = new THREE.Vector3(
-            (Math.random() * n - n2),
-            (Math.random() * n - n2),
-            0
-        );
-        user.velocity = new THREE.Vector3(0, 0, 0);
-        user.mass = user_mass;
-        user.id = i;
-        user_geometry.vertices.push(user);
-
-        user_colors.push(colors[i % 4]);
-
-        var user_outer = user.clone();
-        user_outer.mass = user_mass;
-        user_outer.id = i;
-        user_outer_geometry.vertices.push(user_outer);
-    }
-
-    particle_geometry.computeBoundingSphere();
-    particle_geometry.colors = particle_colors;
-
-    user_geometry.computeBoundingSphere();
-    user_geometry.colors = user_colors;
-
-    user_outer_geometry.computeBoundingSphere();
-
     //
 
-    particle_system = new THREE.ParticleSystem( particle_geometry, particle_material );
-    user_system = new THREE.ParticleSystem( user_geometry, user_material );
-    user_outer_system = new THREE.ParticleSystem( user_outer_geometry, user_outer_material );
+    var positions    = new Float32Array( particle_count * 3 );
+    var values_color = new Float32Array( particle_count * 3 );
+    var values_size  = new Float32Array( particle_count );
+
+    var color = new THREE.Color();
+
+    for( var v = 0; v < particle_count; v++ ) {
+
+        values_size[ v ] = particle_size;
+
+        positions[ v * 3 + 0 ] = ( Math.random() * 2 - 1 ) * particle_count;
+        positions[ v * 3 + 1 ] = ( Math.random() * 2 - 1 ) * particle_count;
+        positions[ v * 3 + 2 ] = 0; // z is fixed
+
+        color.setHSL( v / particle_count, 1.0, 0.5 );
+
+        values_color[ v * 3 + 0 ] = color.r;
+        values_color[ v * 3 + 1 ] = color.g;
+        values_color[ v * 3 + 2 ] = color.b;
+
+    }
+
+    particle_geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+    particle_geometry.addAttribute( 'customColor', new THREE.BufferAttribute( values_color, 3 ) );
+    particle_geometry.addAttribute( 'size', new THREE.BufferAttribute( values_size, 1 ) );
+
+    particle_system = new THREE.PointCloud( particle_geometry, particle_material );
 
     particle_system.sortParticles = true;
-    user_system.sortParticles = true;
-    user_outer_system.sortParticles = true;
 
     scene.add( particle_system );
-    scene.add( user_system );
-    scene.add( user_outer_system );
 
     //
 
@@ -255,35 +193,16 @@ function getAcceleration(p1, p2) {
 
 function render() {
 
-    var i;
-    var j;
-    var particle;
-    var user_piece;
+    var time = Date.now() * 0.005;
+    var size = particle_geometry.attributes.size.array;
 
-    // Increment and wrap fmod
-    fmod++;
-    fmod %= fps;
+    for( var i = 0; i < particle_count; i++ ) {
 
-    for ( i = particle_geometry.vertices.length - 1; i >= 0; --i ) {
-        particle = particle_geometry.vertices[i];
+        size[ i ] = particle_size * ( 2 + Math.sin( 0.1 * i + time ) );
 
-        // Update the particle's position
-        particle.add( particle.velocity );
-
-        // for ( j = user_geometry.vertices.length - 1; j >= 0; --j ) {
-        //     particle2 = user_geometry.vertices[j];
-        //     if ( particle !== particle2 && !particle.id ) {
-        //         particle.velocity.add( getAcceleration(particle, particle2) );
-        //     }
-        // }
     }
 
-    for ( j = user_geometry.vertices.length - 1; j >= 0; --j ) {
-        user_piece = user_geometry.vertices[j];
-        user_piece.add(user_piece.velocity);
-        user_outer_geometry.vertices[j].copy(user_piece);
-        user_piece.velocity.add( getAcceleration(user_piece, origin).divideScalar(20) ); // divide by 20 to reduce accel speed
-    }
+    particle_geometry.attributes.size.needsUpdate = true;
 
     renderer.render( scene, camera );
 }
