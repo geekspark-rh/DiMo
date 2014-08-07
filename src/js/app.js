@@ -1,4 +1,4 @@
-/*global THREE, requestAnimationFrame, Stats, SPE*/
+/*global THREE, requestAnimationFrame, Stats*/
 /*jslint browser: true*/
 
 var container;
@@ -18,7 +18,6 @@ var user_colors;
 
 var user_outer_geometry;
 var user_outer_system;
-var user_outer_colors;
 
 var origin;
 
@@ -45,49 +44,6 @@ function set_fps(new_fps) {
     return fps;
 }
 window.set_fps = set_fps;
-
-// Create particle group and emitter
-function add_trail_emitter(source, color) {
-    var ptrail_group = new SPE.Group({
-        texture: THREE.ImageUtils.loadTexture('img/bullet.png'),
-        maxAge: 2
-    });
-
-    var ptrail_emitter = new SPE.Emitter({
-        type: 'sphere',
-
-        // position: new THREE.Vector3(0, 0, 0),
-        position: source,
-
-        radius: 0,
-        speed: 0,
-
-        colorStart: color,
-        colorStartSpread: new THREE.Vector3(100, 100, 100),
-        // colorEnd: new THREE.Color('white'),
-
-        sizeStart: 150,
-        sizeMiddle: 250,
-        sizeEnd: 0,
-
-        blending: THREE.AdditiveBlending,
-        opacityStart: 0.35,
-        // opacityMiddle: 0.5,
-        opacityEnd: 0,
-
-        particleCount: 200,
-        angleAlignVelocity: 0
-    });
-
-    ptrail_group.addEmitter( ptrail_emitter );
-    scene.add( ptrail_group.mesh );
-    return {
-        group: ptrail_group,
-        emitter: ptrail_emitter
-    };
-}
-
-
 
 function init() {
 
@@ -126,15 +82,28 @@ function init() {
     // THREE.SubtractiveBlending
     // THREE.MultiplyBlending
 
-    var particle_material = new THREE.ParticleSystemMaterial({
-        size            : particle_size,
-        vertexColors    : THREE.VertexColors,
-        blending        : THREE.AdditiveBlending,
-        sizeAttenuation : true,
-        transparent     : true,
-        fog             : false,
-        map             : THREE.ImageUtils.loadTexture('img/particle.png')
-    });
+    var uniforms = {
+        time: { type: "f", value: 1.0 },
+        resolution: { type: "v2", value: new THREE.Vector2() }
+    };
+
+    var particle_material = new THREE.ShaderMaterial( {
+
+        uniforms       : uniforms,
+        vertexShader   : document.getElementById( 'vertexShader' ).textContent,
+        fragmentShader : document.getElementById( 'fragmentShader' ).textContent
+
+    } );
+
+    // var particle_material = new THREE.ParticleSystemMaterial({
+    //     size            : particle_size,
+    //     vertexColors    : THREE.VertexColors,
+    //     blending        : THREE.AdditiveBlending,
+    //     sizeAttenuation : true,
+    //     transparent     : true,
+    //     fog             : false,
+    //     map             : THREE.ImageUtils.loadTexture('img/particle.png')
+    // });
 
     var user_material = new THREE.ParticleSystemMaterial({
         size            : user_size,
@@ -173,12 +142,11 @@ function init() {
             0
         );
         particle.velocity = new THREE.Vector3(
-            Math.random() * n / n2,
-            Math.random() * n / n2,
+            0, //Math.random() * n / n2,
+            0, //Math.random() * n / n2,
             0
         );
         particle.mass = particle_mass;
-        particle.trail = add_trail_emitter(particle, colors[i % 4]);
         particle_geometry.vertices.push(particle);
 
         particle_colors.push(colors[i % 4]);
@@ -290,9 +258,7 @@ function render() {
     var i;
     var j;
     var particle;
-    var particle2;
     var user_piece;
-    var user_outer_piece;
 
     // Increment and wrap fmod
     fmod++;
@@ -304,18 +270,12 @@ function render() {
         // Update the particle's position
         particle.add( particle.velocity );
 
-        // Update the particle's trail's position
-        // particle.trail.emitter.position = particle.clone();
-
-        // Update the particle's trail display
-        particle.trail.group.tick( 1 / fps );
-
-        for ( j = user_geometry.vertices.length - 1; j >= 0; --j ) {
-            particle2 = user_geometry.vertices[j];
-            if ( particle !== particle2 && !particle.id ) {
-                particle.velocity.add( getAcceleration(particle, particle2) );
-            }
-        }
+        // for ( j = user_geometry.vertices.length - 1; j >= 0; --j ) {
+        //     particle2 = user_geometry.vertices[j];
+        //     if ( particle !== particle2 && !particle.id ) {
+        //         particle.velocity.add( getAcceleration(particle, particle2) );
+        //     }
+        // }
     }
 
     for ( j = user_geometry.vertices.length - 1; j >= 0; --j ) {
