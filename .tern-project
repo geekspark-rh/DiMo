@@ -1,0 +1,6 @@
+{
+    "libs": [ "browser", "jquery", "underscore", "ecma5" ],
+    "loadEagerly" : [
+        "src/lib/threejs/three.js"
+    ]
+}
