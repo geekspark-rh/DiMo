@@ -51,8 +51,8 @@ module.exports = function(grunt) {
                 // }
             }, { // make sure app.js gets copied to app.min.js even when --dev
                  // is on
-                src: 'src/js/app.js',
-                dest: 'build/js/app.min.js'
+                src: 'src/js/main.js',
+                dest: 'build/js/main.min.js'
             }]
         }
     };

@@ -8,7 +8,6 @@
 requirejs.config({
     baseUrl: '.',
     paths: {
-        dimo       : 'js/app.min',
         text       : 'lib/requirejs/plugins/text',
         three      : 'lib/threejs/three',
         stats      : 'lib/threejs/stats.min',
@@ -19,6 +18,13 @@ requirejs.config({
         'three' : { exports: 'THREE', },
         'stats' : { exports: 'Stats', deps: ['three'] },
     },
+    packages: [
+        {
+            name     : 'dimo',
+            location : 'js',
+            main     : 'main.min',
+        },
+    ],
 });
 
 // This is just a config file, but it's also the main entry point for the app
