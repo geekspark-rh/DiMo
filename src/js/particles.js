@@ -9,8 +9,10 @@ var deps = [
     'dimo/origin',
     'dimo/accel',
     'dimo/colors',
+    'dimo/users',
     'text!shaders/vertex.vert',
     'text!shaders/particle.frag',
+    'glmatrix',
 ];
 
 function main(
@@ -19,8 +21,10 @@ function main(
     origin,
     accel,
     colors,
+    users,
     vert,
-    frag
+    frag,
+    m
 ) {
 
     var WIDTH  = viewport.WIDTH;
@@ -29,7 +33,7 @@ function main(
     var i30    = 0;
     var i31    = 1;
 
-    var MAX_VEL = 6;
+    var MAX_VEL = 2;
 
     var size;
     var vel;
@@ -39,8 +43,8 @@ function main(
     var particle_system;
     var particle_colors;
 
-    var particle_count = 1e5;
-    var particle_size = 2;
+    var particle_count = 1e5/2;
+    var particle_size = 1;
     var particle_mass = 2;
 
     var accd  = 1.75; // how much the acceleration is allowed to change each frame
@@ -112,7 +116,6 @@ function main(
     particle_geometry.addAttribute( 'size'         , new THREE.BufferAttribute( values_size   , 1 ) );
     particle_geometry.addAttribute( 'velocity'     , new THREE.BufferAttribute( velocities    , 3 ) );
 
-    size  = particle_geometry.attributes.size.array;
     vel   = particle_geometry.attributes.velocity.array;
     pos   = particle_geometry.attributes.position.array;
 
@@ -120,10 +123,20 @@ function main(
 
     particle_system.sortParticles = true;
 
+    var new_accel = new Float32Array(2);
+    var users_accel;
+    var new_v;
+    var dist;
+
+    var MIN_ACCEL_DIST = 25; // if a particle is closer than MIN_ACCEL_DIST to a user, don't run acceleration, to prevent bunching
+    var MAX_ACCEL_DIST = 350;
+
+    var NO_ACCEL = new Float32Array(2);
+
     function update() {
 
         var i;
-        var new_accel;
+        var user_accel;
 
         for( i = particle_count - 1; i >= 0; i-- ) {
 
@@ -133,11 +146,39 @@ function main(
             // size[ i ] = particle_size * ( 2 + Math.sin( 0.1 * i + time ) );
 
             // TODO add accel toward users here!
-            new_accel = accel( [10,10] , [pos[i30], pos[i31]]);
+            new_accel[0] = 0;
+            new_accel[1] = 0;
+
+            // get player 1
+            dist         = Math.sqrt(Math.pow(pos[i30]-users.positions[0],2) + Math.pow(pos[i31]-users.positions[1],2));
+            users_accel  = dist > MIN_ACCEL_DIST && dist < MAX_ACCEL_DIST ? accel( [ users.positions[0], users.positions[1]], [pos[i30], pos[i31]]) : NO_ACCEL;
+            new_accel[0] += users_accel[0];
+            new_accel[1] += users_accel[1];
+
+            // get player 2
+            dist         = Math.sqrt(Math.pow(pos[i30]-users.positions[3],2) + Math.pow(pos[i31]-users.positions[4],2));
+            users_accel  = dist > MIN_ACCEL_DIST && dist < MAX_ACCEL_DIST ? accel( [ users.positions[3], users.positions[4]], [pos[i30], pos[i31]]) : NO_ACCEL;
+            new_accel[0] += users_accel[0];
+            new_accel[1] += users_accel[1];
+
+            // get player 3
+            dist         = Math.sqrt(Math.pow(pos[i30]-users.positions[6],2) + Math.pow(pos[i31]-users.positions[7],2));
+            users_accel  = dist > MIN_ACCEL_DIST && dist < MAX_ACCEL_DIST ? accel( [ users.positions[6], users.positions[7]], [pos[i30], pos[i31]]) : NO_ACCEL;
+            new_accel[0] += users_accel[0];
+            new_accel[1] += users_accel[1];
 
             // Add acc to vel
             vel[i30] = vel[i30] + new_accel[0];
             vel[i31] = vel[i31] + new_accel[1];
+
+            new_v = m.vec2.fromValues(vel[i30], vel[i31]);
+            // Clamp velocity if it gets too fast
+            if( m.vec2.length( new_v ) > MAX_VEL ) {
+                m.vec2.normalize(new_v, new_v);
+                m.vec2.scale(new_v, new_v, MAX_VEL);
+                vel[i30] = new_v[0];
+                vel[i31] = new_v[1];
+            }
 
             // Add vel to pos
             pos[i30] += vel[i30];
@@ -145,7 +186,6 @@ function main(
 
         }
 
-        // particle_geometry.attributes.size.needsUpdate = true;
         particle_geometry.attributes.position.needsUpdate = true;
         particle_geometry.attributes.velocity.needsUpdate = true;
     }

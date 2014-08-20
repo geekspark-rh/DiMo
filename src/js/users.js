@@ -11,6 +11,7 @@ var deps = [
     'dimo/colors',
     'text!shaders/vertex.vert',
     'text!shaders/user.frag',
+    'glmatrix',
 ];
 
 function main(
@@ -20,7 +21,8 @@ function main(
     accel,
     colors,
     vert,
-    frag
+    frag,
+    m
 ) {
 
     var WIDTH  = viewport.WIDTH;
@@ -29,7 +31,7 @@ function main(
     var i30    = 0;
     var i31    = 1;
 
-    var MAX_VEL = 2;
+    var MAX_VEL = 4;
 
     var size;
     var vel;
@@ -37,14 +39,18 @@ function main(
 
     // this is the placeholder for velocity input that will come from websocket
     // connection to the dimo server
-    var vel_input = [ {x:0,y:0}, {x:0,y:0}, {x:0,y:0} ];
+    var input = {
+        red: {x:0,y:0},
+        green: {x:0,y:0},
+        blue: {x:0,y:0},
+    };
 
     var particle_geometry;
     var particle_system;
     var particle_colors;
 
     var particle_count = 3;
-    var particle_size = 25;
+    var particle_size = 50;
     var particle_mass = 2;
 
     var accd  = 0.50; // how much the acceleration is allowed to change each frame
@@ -69,7 +75,7 @@ function main(
 
     var uniforms = {
         color:     { type: "c", value: new THREE.Color( 0xffffff ) },
-        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/box.png" ) }
+        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particle.png" ) }
     };
 
     var particle_material = new THREE.ShaderMaterial( {
@@ -78,7 +84,7 @@ function main(
         attributes     : attributes,
         vertexShader   : vert,
         fragmentShader : frag,
-        blending       : THREE.AdditiveBlending,
+        blending       : THREE.NormalBlending,
         depthTest      : false,
         transparent    : true
 
@@ -96,7 +102,7 @@ function main(
 
         positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * WIDTH;
         positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * HEIGHT;
-        positions[ v * 3 + 2 ] = 0; // z is fixed
+        positions[ v * 3 + 2 ] = 10; // z is fixed
 
         color = colors[ v % colors.length ];
 
@@ -104,8 +110,8 @@ function main(
         values_color[ v * 3 + 1 ] = color.g;
         values_color[ v * 3 + 2 ] = color.b;
 
-        velocities[ v * 3 + 0 ] = ( Math.random() * 1 - 0.5 );
-        velocities[ v * 3 + 1 ] = ( Math.random() * 1 - 0.5 );
+        velocities[ v * 3 + 0 ] = 0;
+        velocities[ v * 3 + 1 ] = 0;
         velocities[ v * 3 + 2 ] = 0; // z is fixed
 
     }
@@ -124,11 +130,14 @@ function main(
     particle_system.sortParticles = true;
 
     function handle_ws_message(message) {
-        vel_input = JSON.parse(message.data);
+        input = JSON.parse(message.data);
     }
     try {
-        var connection = new WebSocket('ws://127.0.0.1:1337');
+        var ip = '10.192.212.90';
+        // var ip = '127.0.0.1';
+        var connection = new WebSocket('ws://' + ip + ':1337');
         connection.onopen = function () {
+            console.log("connection established");
             // when connection opens, establish message handler
             connection.onmessage = handle_ws_message;
         };
@@ -140,9 +149,11 @@ function main(
     var X_BOUND = WIDTH/1.5;
     var Y_BOUND = HEIGHT/1.5;
 
+    var new_v;
+    var i;
+    var colornames = ['red', 'green', 'blue'];
     function update() {
 
-        var i;
 
         for( i = 0; i < particle_count; i++ ) {
 
@@ -152,18 +163,14 @@ function main(
             // size[ i ] = Math.sqrt(Math.pow(vel[i30],2) + Math.pow(vel[i31],2));
 
             // Add acc to vel
-            vel[i30] += vel_input[i].x;
-            vel[i31] += vel_input[i].y;
-
-            // Add vel to pos
-            pos[i30] += vel[i30];
-            pos[i31] += vel[i31];
+            pos[i30] = -input[colornames[i]].x;
+            pos[i31] = -input[colornames[i]].y;
 
             if (pos[i30] > X_BOUND || pos[i30] < -X_BOUND) {
-                vel[i30] *= -1;
+                pos[i30] = 0;
             }
             if (pos[i31] > Y_BOUND || pos[i31] < -Y_BOUND) {
-                vel[i31] *= -1;
+                pos[i31] = 0;
             }
 
         }
@@ -174,8 +181,10 @@ function main(
     }
 
     return {
-        system: particle_system,
-        update: update,
+        system    : particle_system,
+        update    : update,
+        positions : particle_system.geometry.attributes.position.array,
+        count     : particle_count,
     };
 }
 

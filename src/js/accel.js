@@ -9,6 +9,8 @@ var deps = [
 
 function main(m) {
 
+    var vec2 = m.vec2;
+
     var p1x;
     var p1y;
     var p2x;
@@ -23,38 +25,32 @@ function main(m) {
     var p1v  = m.vec2.create();
     var p2v  = m.vec2.create();
     var ov   = m.vec2.create(); // out vector
-    var mass = 4;
+    var mass = 40.0;
+    var mag;
+
+    var MAX_ACCEL = 6;
+
+    var RANDOM_VARIATION = 0.75;
+
     function glaccel(p1, p2) {
-        m.vec2.set(p1v, p1[0], p1[1]);
-        m.vec2.set(p2v, p2[0], p2[1]);
-        r = Math.pow(m.vec2.distance(p1v, p2v), 2);
-        m.vec2.subtract(ov, p2v, p1v);
-        m.vec2.normalize(ov, ov);
-        m.vec2.scale(ov, ov, mass*g/r);
+        vec2.set(p1v, p1[0], p1[1]);
+        vec2.set(p2v, p2[0], p2[1]);
+        r = Math.pow(vec2.distance(p1v, p2v), 2);
+        vec2.subtract(ov, p2v, p1v);
+        vec2.normalize(ov, ov);
+        mag = (Math.random()+RANDOM_VARIATION)*mass*g/r;
+        vec2.scale(ov, ov, Math.abs(mag) < MAX_ACCEL ? mag : 0);
+        // console.log(ov[0], ov[1]);
         return ov;
     }
-    // function getAcceleration(p1, p2) {
-    //     // this version is slow because it creates 8 vector objects... for EACH
-    //     // particle+player pair, for each frame,
-    //     // so, 8 * particle count * player count bector objects each frame.
-    //     // that's a looooooot
-    //     var n = g;
-    //     var r_sqrd = 2 * p2.distanceTo(p1);
-    //     var u = p2.clone()
-    //     .sub(p1)
-    //     .normalize()
-    //     .multiply( new THREE.Vector3( n, n, 0 ) )
-    //     .divideScalar(r_sqrd)
-    //     .clampScalar(-MAX_VEL, MAX_VEL);
-    //     return u;
-    // }
-
-    var MAX_ACCEL = 10;
 
     var xd2, yd2;
     function accel(p1, p2) {
-        // these calculations are done by hand because it's faster in my tests
-        // than using any library functions :(
+        // I wrote this one by hand thinking it'd be faster than relying on
+        // vector library functions with the overhead of many function calls.
+        // It's MUCH MUCH faster than threejs vector math, but it's exactly the
+        // same speed as glmatrix.  glmatrix is easier to read so we'll go with
+        // that...
 
         p1x = p1[0];
         p1y = p1[1];
@@ -80,7 +76,7 @@ function main(m) {
 
     }
 
-    return accel;
+    return glaccel;
 }
 
 define(deps, main);

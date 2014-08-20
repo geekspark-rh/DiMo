@@ -11,9 +11,9 @@ void main() {
 
     vec3 vel_mult = vec3( v, v, v );
 
-    gl_FragColor = vec4( color * vColor + vel_mult, 1.0 );
+    gl_FragColor = vec4( color * vColor + vel_mult, 0.8 );
 
-    /* gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord ); */
+    gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
 
 }
 
