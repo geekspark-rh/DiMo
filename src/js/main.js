@@ -61,7 +61,7 @@ function main(
         origin.mass = 30;
 
         scene.add( particles.system );
-        // scene.add( users.system );
+        scene.add( users.system );
 
         //
 

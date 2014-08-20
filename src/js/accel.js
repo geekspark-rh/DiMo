@@ -27,10 +27,10 @@ function main(m) {
     function glaccel(p1, p2) {
         m.vec2.set(p1v, p1[0], p1[1]);
         m.vec2.set(p2v, p2[0], p2[1]);
-        r = Math.pow( m.vec2.distance(p1v, p2v), 2);
+        r = Math.pow(m.vec2.distance(p1v, p2v), 2);
         m.vec2.subtract(ov, p2v, p1v);
         m.vec2.normalize(ov, ov);
-        m.vec2.scale(ov, ov, mass*mass*g/r);
+        m.vec2.scale(ov, ov, mass*g/r);
         return ov;
     }
     // function getAcceleration(p1, p2) {
@@ -51,6 +51,7 @@ function main(m) {
 
     var MAX_ACCEL = 10;
 
+    var xd2, yd2;
     function accel(p1, p2) {
         // these calculations are done by hand because it's faster in my tests
         // than using any library functions :(
@@ -60,24 +61,26 @@ function main(m) {
         p2x = p2[0];
         p2y = p2[1];
 
-        r = Math.pow( p1x - p2x, 2 ) + Math.pow( p1y - p2y, 2 );
-
         xd = p2x - p1x;
         yd = p2y - p1y;
 
-        nv = Math.sqrt(Math.pow(xd,2) + Math.pow(yd,2));
+        xd2 = Math.pow( xd, 2 );
+        yd2 = Math.pow( yd, 2 );
+        r = xd2 + yd2;
+
+        nv = Math.sqrt(r);
 
         ux = xd / nv;
         uy = yd / nv;
 
-        ax = g * ux / r;
-        ay = g * uy / r;
+        ax = mass * g * ux / r;
+        ay = mass * g * uy / r;
 
         return [ax, ay];
 
     }
 
-    return glaccel;
+    return accel;
 }
 
 define(deps, main);

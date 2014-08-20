@@ -10,7 +10,7 @@ var deps = [
     'dimo/accel',
     'dimo/colors',
     'text!shaders/vertex.vert',
-    'text!shaders/pulsing-dot.frag',
+    'text!shaders/user.frag',
 ];
 
 function main(

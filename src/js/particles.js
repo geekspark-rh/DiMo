@@ -10,7 +10,7 @@ var deps = [
     'dimo/accel',
     'dimo/colors',
     'text!shaders/vertex.vert',
-    'text!shaders/pulsing-dot.frag',
+    'text!shaders/particle.frag',
 ];
 
 function main(
@@ -29,7 +29,7 @@ function main(
     var i30    = 0;
     var i31    = 1;
 
-    var MAX_VEL = 10;
+    var MAX_VEL = 6;
 
     var size;
     var vel;
@@ -122,22 +122,22 @@ function main(
 
     function update() {
 
-        var time  = Date.now() * 0.005;
         var i;
         var new_accel;
 
-        for( i = 0; i < particle_count; i++ ) {
+        for( i = particle_count - 1; i >= 0; i-- ) {
 
             i30 = i * 3;
             i31 = i30+ 1;
 
             // size[ i ] = particle_size * ( 2 + Math.sin( 0.1 * i + time ) );
 
-            new_accel = accel( origin , [pos[i30], pos[i31]]);
+            // TODO add accel toward users here!
+            new_accel = accel( [10,10] , [pos[i30], pos[i31]]);
 
             // Add acc to vel
-            vel[i30] = Math.min(vel[i30] + new_accel[0], MAX_VEL);
-            vel[i31] = Math.min(vel[i31] + new_accel[1], MAX_VEL);
+            vel[i30] = vel[i30] + new_accel[0];
+            vel[i31] = vel[i31] + new_accel[1];
 
             // Add vel to pos
             pos[i30] += vel[i30];
