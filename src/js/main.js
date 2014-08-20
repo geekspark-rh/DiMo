@@ -10,6 +10,7 @@ var deps = [
     'dimo/camera',
     'dimo/scene',
     'dimo/particles',
+    'dimo/users',
     'dimo/viewport',
 ];
 
@@ -20,6 +21,7 @@ function main(
     camera,
     scene,
     particles,
+    users,
     viewport
 ) {
 
@@ -41,8 +43,6 @@ function main(
     var delta;
 
 
-    var g = 5.81;
-
     init();
     setTimeout(animate(), 0);
 
@@ -61,10 +61,13 @@ function main(
         origin.mass = 30;
 
         scene.add( particles.system );
+        // scene.add( users.system );
 
         //
 
-        renderer = new THREE.WebGLRenderer();
+        renderer = new THREE.WebGLRenderer({
+            precision: "lowp",
+        });
         renderer.setClearColor( 0x000000, 1 );
         renderer.setSize( WIDTH, HEIGHT );
 
@@ -109,22 +112,10 @@ function main(
 
     }
 
-
-    function getAcceleration(p1, p2) {
-        var n = g;
-        var r_sqrd = 2 * p2.distanceTo(p1);
-        var u = p2.clone()
-        .sub(p1)
-        .normalize()
-        .multiply( new THREE.Vector3( n, n, 0 ) )
-        .divideScalar(r_sqrd)
-        .clampScalar(-MAX_VEL, MAX_VEL);
-        return u;
-    }
-
     function render() {
 
         particles.update();
+        users.update();
 
         renderer.render( scene, camera );
     }

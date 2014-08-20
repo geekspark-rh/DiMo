@@ -8,11 +8,12 @@
 requirejs.config({
     baseUrl: '.',
     paths: {
+        shaders    : 'shaders',
         text       : 'lib/requirejs/plugins/text',
         three      : 'lib/threejs/three',
         stats      : 'lib/threejs/stats.min',
         underscore : 'lib/underscore/underscore',
-        shaders    : 'shaders',
+        glmatrix   : 'lib/glMatrix/gl-matrix',
     },
     shim: {
         'three' : { exports: 'THREE', },
