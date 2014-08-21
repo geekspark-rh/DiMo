@@ -33,7 +33,7 @@ function main(
     var i30    = 0;
     var i31    = 1;
 
-    var MAX_VEL = 2;
+    var MAX_VEL = 3;
 
     var size;
     var vel;
@@ -43,7 +43,7 @@ function main(
     var particle_system;
     var particle_colors;
 
-    var particle_count = 1e5/2;
+    var particle_count = 1e4;
     var particle_size = 1;
     var particle_mass = 2;
 
@@ -128,8 +128,8 @@ function main(
     var new_v;
     var dist;
 
-    var MIN_ACCEL_DIST = 25; // if a particle is closer than MIN_ACCEL_DIST to a user, don't run acceleration, to prevent bunching
-    var MAX_ACCEL_DIST = 350;
+    var MIN_ACCEL_DIST = 22; // if a particle is closer than MIN_ACCEL_DIST to a user, don't run acceleration, to prevent bunching
+    var MAX_ACCEL_DIST = 35000000;
 
     var NO_ACCEL = new Float32Array(2);
 

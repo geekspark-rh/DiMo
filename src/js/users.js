@@ -49,7 +49,7 @@ function main(
     var particle_system;
     var particle_colors;
 
-    var particle_count = 3;
+    var particle_count = 1;
     var particle_size = 50;
     var particle_mass = 2;
 
@@ -129,12 +129,20 @@ function main(
 
     particle_system.sortParticles = true;
 
+    var INPUT_RES = [640,480];
+    var INPUT_RES_H = [ INPUT_RES[0] / 2, INPUT_RES[1] / 2];
     function handle_ws_message(message) {
         input = JSON.parse(message.data);
+        input.red.x   = (input.red.x   - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
+        input.red.y   = (input.red.y   - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];
+        input.green.x = (input.green.x - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
+        input.green.y = (input.green.y - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];
+        input.blue.x  = (input.blue.x  - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
+        input.blue.y  = (input.blue.y  - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];
     }
     try {
-        var ip = '10.192.212.90';
-        // var ip = '127.0.0.1';
+        // var ip = '10.192.212.90';
+        var ip = '127.0.0.1';
         var connection = new WebSocket('ws://' + ip + ':1337');
         connection.onopen = function () {
             console.log("connection established");
@@ -165,13 +173,6 @@ function main(
             // Add acc to vel
             pos[i30] = -input[colornames[i]].x;
             pos[i31] = -input[colornames[i]].y;
-
-            if (pos[i30] > X_BOUND || pos[i30] < -X_BOUND) {
-                pos[i30] = 0;
-            }
-            if (pos[i31] > Y_BOUND || pos[i31] < -Y_BOUND) {
-                pos[i31] = 0;
-            }
 
         }
 

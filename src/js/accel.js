@@ -20,17 +20,14 @@ function main(m) {
     var xd, yd; // diffs
     var ux, uy; // unit vector x
     var ax, ay; // accel values
-    var g = -9.81;
+    var g = -9.81*1e3;
 
     var p1v  = m.vec2.create();
     var p2v  = m.vec2.create();
     var ov   = m.vec2.create(); // out vector
-    var mass = 40.0;
     var mag;
 
-    var MAX_ACCEL = 6;
-
-    var RANDOM_VARIATION = 0.75;
+    var MAX_ACCEL = 15;
 
     function glaccel(p1, p2) {
         vec2.set(p1v, p1[0], p1[1]);
@@ -38,7 +35,7 @@ function main(m) {
         r = Math.pow(vec2.distance(p1v, p2v), 2);
         vec2.subtract(ov, p2v, p1v);
         vec2.normalize(ov, ov);
-        mag = (Math.random()+RANDOM_VARIATION)*mass*g/r;
+        mag = Math.random()*g/r;
         vec2.scale(ov, ov, Math.abs(mag) < MAX_ACCEL ? mag : 0);
         // console.log(ov[0], ov[1]);
         return ov;
