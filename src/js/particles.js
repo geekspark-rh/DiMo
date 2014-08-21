@@ -133,10 +133,13 @@ function main(
 
     var NO_ACCEL = new Float32Array(2);
 
+    var new_v = new Float32Array(2);
+
     function update() {
 
         var i;
         var user_accel;
+        var vec_l;
 
         for( i = particle_count - 1; i >= 0; i-- ) {
 
@@ -171,11 +174,12 @@ function main(
             vel[i30] = vel[i30] + new_accel[0];
             vel[i31] = vel[i31] + new_accel[1];
 
-            new_v = m.vec2.fromValues(vel[i30], vel[i31]);
+            new_v[0] = vel[i30];
+            new_v[1] = vel[i31];
+            vec_l = m.vec2.length(new_v);
             // Clamp velocity if it gets too fast
             if( m.vec2.length( new_v ) > MAX_VEL ) {
-                m.vec2.normalize(new_v, new_v);
-                m.vec2.scale(new_v, new_v, MAX_VEL);
+                m.vec2.scale(new_v, new_v, MAX_VEL/vec_l);
                 vel[i30] = new_v[0];
                 vel[i31] = new_v[1];
             }
