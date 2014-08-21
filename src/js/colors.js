@@ -9,9 +9,9 @@ var deps = [
 
 function main(THREE) {
     return [
-        new THREE.Color().setRGB( 1, 0.1, 0.1 ),   // this should be red!
-        new THREE.Color().setRGB( 0.25, 1, 0.25 ), // this should be green!
-        new THREE.Color().setRGB( 0.30, 0.30, 1 ), // this should be blue!
+        new THREE.Color().setRGB( 1, 0, 0 ),   // this should be red!
+        new THREE.Color().setRGB( 0, 1, 0 ), // this should be green!
+        new THREE.Color().setRGB( 0, 0, 1 ), // this should be blue!
     ];
 }
 

@@ -27,7 +27,9 @@ function main(m) {
     var ov   = m.vec2.create(); // out vector
     var mag;
 
-    var MAX_ACCEL = 15;
+    var MAX_ACCEL = 5;
+
+    var RANDOM_VARIANCE = 0.7;
 
     function glaccel(p1, p2) {
         vec2.set(p1v, p1[0], p1[1]);
@@ -35,9 +37,8 @@ function main(m) {
         r = Math.pow(vec2.distance(p1v, p2v), 2);
         vec2.subtract(ov, p2v, p1v);
         vec2.normalize(ov, ov);
-        mag = Math.random()*g/r;
+        mag = Math.max(Math.random(), RANDOM_VARIANCE)*g/r;
         vec2.scale(ov, ov, Math.abs(mag) < MAX_ACCEL ? mag : 0);
-        // console.log(ov[0], ov[1]);
         return ov;
     }
 

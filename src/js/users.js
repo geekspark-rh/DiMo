@@ -49,7 +49,7 @@ function main(
     var particle_system;
     var particle_colors;
 
-    var particle_count = 1;
+    var particle_count = 3;
     var particle_size = 50;
     var particle_mass = 2;
 
@@ -84,13 +84,14 @@ function main(
         attributes     : attributes,
         vertexShader   : vert,
         fragmentShader : frag,
-        blending       : THREE.NormalBlending,
+        blending       : THREE.AdditiveBlending,
         depthTest      : false,
         transparent    : true
 
     } );
 
     var positions     = new Float32Array( particle_count * 3 );
+    var prevpositions = new Float32Array( particle_count * 3 );
     var values_color  = new Float32Array( particle_count * 3 );
     var values_size   = new Float32Array( particle_count );
     var velocities    = new Float32Array( particle_count * 3 );
@@ -160,8 +161,10 @@ function main(
     var new_v;
     var i;
     var colornames = ['red', 'green', 'blue'];
-    function update() {
 
+    var prevx = 0, prevy = 0;
+    var alpha = 0.25;
+    function update() {
 
         for( i = 0; i < particle_count; i++ ) {
 
@@ -171,8 +174,11 @@ function main(
             // size[ i ] = Math.sqrt(Math.pow(vel[i30],2) + Math.pow(vel[i31],2));
 
             // Add acc to vel
-            pos[i30] = -input[colornames[i]].x;
-            pos[i31] = -input[colornames[i]].y;
+            pos[i30] = (alpha * -input[colornames[i]].x) + (1 - alpha) * prevpositions[i30];
+            pos[i31] = (alpha * -input[colornames[i]].y) + (1 - alpha) * prevpositions[i31];
+
+            prevpositions[i30] = pos[i30];
+            prevpositions[i31] = pos[i31];
 
         }
 
