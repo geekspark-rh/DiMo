@@ -43,8 +43,8 @@ function main(
     var particle_system;
     var particle_colors;
 
-    var particle_count = 2e4;
-    var particle_size = 1;
+    var particle_count = 5e4;
+    var particle_size = 2;
     var particle_mass = 2;
 
     var accd  = 1.75; // how much the acceleration is allowed to change each frame

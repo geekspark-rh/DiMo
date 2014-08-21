@@ -130,10 +130,16 @@ function main(
 
     particle_system.sortParticles = true;
 
-    var INPUT_RES = [640,480];
-    var INPUT_RES_H = [ INPUT_RES[0] / 2, INPUT_RES[1] / 2];
+    var INPUT_RES;
+    var INPUT_RES_H;
+
     function handle_ws_message(message) {
         input = JSON.parse(message.data);
+        if (!INPUT_RES) {
+            INPUT_RES = [input.w, input.h];
+            INPUT_RES_H = [ INPUT_RES[0] / 2, INPUT_RES[1] / 2];
+            console.log("Set INPUT_RES: " + INPUT_RES);
+        }
         input.red.x   = (input.red.x   - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
         input.red.y   = (input.red.y   - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];
         input.green.x = (input.green.x - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
@@ -141,6 +147,7 @@ function main(
         input.blue.x  = (input.blue.x  - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
         input.blue.y  = (input.blue.y  - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];
     }
+
     try {
         // var ip = '10.192.212.90';
         var ip = '127.0.0.1';
