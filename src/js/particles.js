@@ -7,7 +7,7 @@ var deps = [
     'three',
     'dimo/viewport',
     'dimo/origin',
-    'dimo/accel',
+    'dimo/gravity',
     'dimo/colors',
     'dimo/users',
     'text!shaders/vertex.vert',
@@ -17,9 +17,9 @@ var deps = [
 
 function main(
     THREE,
-    viewport,
+    vp,
     origin,
-    accel,
+    grav,
     colors,
     users,
     vert,
@@ -27,32 +27,19 @@ function main(
     m
 ) {
 
-    var WIDTH  = viewport.WIDTH;
-    var HEIGHT = viewport.HEIGHT;
+    var P = {};
 
     var i30    = 0;
     var i31    = 1;
 
-    var MAX_VEL = 5;
-
-    var size;
-    var vel;
-    var pos;
-
-    var particle_geometry;
-    var particle_system;
-    var particle_colors;
-
-    var particle_count = 5e4;
-    var particle_size = 2;
-    var particle_mass = 2;
+    P.MAX_VEL      = 5;
+    P.count        = 1e5;
+    P.size = 1;
 
     var accd  = 1.75; // how much the acceleration is allowed to change each frame
     var accdh = accd / 2;
 
-    particle_geometry = new THREE.BufferGeometry();
-
-    particle_colors   = [];
+    P.geometry = new THREE.BufferGeometry();
 
     // THREE.NoBlending
     // THREE.NormalBlending
@@ -67,14 +54,14 @@ function main(
         velocity     : { type : 'v3', value : null }
     };
 
-    var uniforms = {
+    P.uniforms = {
         color:     { type: "c", value: new THREE.Color( 0xffffff ) },
         texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/box.png" ) }
     };
 
-    var particle_material = new THREE.ShaderMaterial( {
+    P.material = new THREE.ShaderMaterial( {
 
-        uniforms       : uniforms,
+        uniforms       : P.uniforms,
         attributes     : attributes,
         vertexShader   : vert,
         fragmentShader : frag,
@@ -84,89 +71,86 @@ function main(
 
     } );
 
-    var positions     = new Float32Array( particle_count * 3 );
-    var values_color  = new Float32Array( particle_count * 3 );
-    var values_size   = new Float32Array( particle_count );
-    var velocities    = new Float32Array( particle_count * 3 );
+    P.positions  = new Float32Array( P.count * 3 );
+    P.colors     = new Float32Array( P.count * 3 );
+    P.sizes      = new Float32Array( P.count );
+    P.velocities = new Float32Array( P.count * 3 );
 
     var color;
 
-    for( var v = 0; v < particle_count; v++ ) {
+    for( var v = 0; v < P.count; v++ ) {
 
-        values_size[ v ] = particle_size;
+        P.sizes[ v ] = P.size;
 
-        positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * WIDTH;
-        positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * HEIGHT;
-        positions[ v * 3 + 2 ] = 0; // z is fixed
+        P.positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * vp.WIDTH;
+        P.positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * vp.HEIGHT;
+        P.positions[ v * 3 + 2 ] = 0; // z is fixed
 
         color = colors[ v % colors.length ];
 
-        values_color[ v * 3 + 0 ] = color.r;
-        values_color[ v * 3 + 1 ] = color.g;
-        values_color[ v * 3 + 2 ] = color.b;
+        P.colors[ v * 3 + 0 ] = color.r;
+        P.colors[ v * 3 + 1 ] = color.g;
+        P.colors[ v * 3 + 2 ] = color.b;
 
-        velocities[ v * 3 + 0 ] = 0;
-        velocities[ v * 3 + 1 ] = 0;
-        velocities[ v * 3 + 2 ] = 0; // z is fixed
+        P.velocities[ v * 3 + 0 ] = 0;
+        P.velocities[ v * 3 + 1 ] = 0;
+        P.velocities[ v * 3 + 2 ] = 0; // z is fixed
 
     }
 
-    particle_geometry.addAttribute( 'position'     , new THREE.BufferAttribute( positions     , 3 ) );
-    particle_geometry.addAttribute( 'customColor'  , new THREE.BufferAttribute( values_color  , 3 ) );
-    particle_geometry.addAttribute( 'size'         , new THREE.BufferAttribute( values_size   , 1 ) );
-    particle_geometry.addAttribute( 'velocity'     , new THREE.BufferAttribute( velocities    , 3 ) );
+    P.geometry.addAttribute( 'position'     , new THREE.BufferAttribute( P.positions     , 3 ) );
+    P.geometry.addAttribute( 'customColor'  , new THREE.BufferAttribute( P.colors  , 3 ) );
+    P.geometry.addAttribute( 'size'         , new THREE.BufferAttribute( P.sizes   , 1 ) );
+    P.geometry.addAttribute( 'velocity'     , new THREE.BufferAttribute( P.velocities    , 3 ) );
 
-    vel   = particle_geometry.attributes.velocity.array;
-    pos   = particle_geometry.attributes.position.array;
+    var vel   = P.geometry.attributes.velocity.array;
+    var pos   = P.geometry.attributes.position.array;
 
-    particle_system = new THREE.PointCloud( particle_geometry, particle_material );
-
-    particle_system.sortParticles = true;
+    P.system = new THREE.PointCloud( P.geometry, P.material );
+    P.system.sortParticles = true;
 
     var new_accel = new Float32Array(2);
     var users_accel;
-    var new_v;
     var dist;
 
-    var MIN_ACCEL_DIST = 22; // if a particle is closer than MIN_ACCEL_DIST to a user, don't run acceleration, to prevent bunching
-    var MAX_ACCEL_DIST = Infinity;
+    P.MIN_ACCEL_DIST = 22; // if a particle is closer than MIN_ACCEL_DIST to a user, don't run acceleration (prevents bunching)
+    P.MAX_ACCEL_DIST = Infinity;
 
     var NO_ACCEL = new Float32Array(2);
 
     var new_v = new Float32Array(2);
 
-    function update() {
+    P.update = function () {
 
         var i;
         var user_accel;
         var vec_l;
 
-        for( i = particle_count - 1; i >= 0; i-- ) {
+        for( i = P.count - 1; i >= 0; i-- ) {
 
             i30 = i * 3;
             i31 = i30+ 1;
 
             // size[ i ] = particle_size * ( 2 + Math.sin( 0.1 * i + time ) );
 
-            // TODO add accel toward users here!
             new_accel[0] = 0;
             new_accel[1] = 0;
 
-            // get player 1
+            // get accel towards player 1
             dist         = Math.sqrt(Math.pow(pos[i30]-users.positions[0],2) + Math.pow(pos[i31]-users.positions[1],2));
-            users_accel  = dist > MIN_ACCEL_DIST && dist < MAX_ACCEL_DIST ? accel( [ users.positions[0], users.positions[1]], [pos[i30], pos[i31]]) : NO_ACCEL;
+            users_accel  = dist > P.MIN_ACCEL_DIST && dist < P.MAX_ACCEL_DIST ? grav.accel( [ users.positions[0], users.positions[1]], [pos[i30], pos[i31]]) : NO_ACCEL;
             new_accel[0] += users_accel[0];
             new_accel[1] += users_accel[1];
 
-            // get player 2
+            // get accel towards player 2
             dist         = Math.sqrt(Math.pow(pos[i30]-users.positions[3],2) + Math.pow(pos[i31]-users.positions[4],2));
-            users_accel  = dist > MIN_ACCEL_DIST && dist < MAX_ACCEL_DIST ? accel( [ users.positions[3], users.positions[4]], [pos[i30], pos[i31]]) : NO_ACCEL;
+            users_accel  = dist > P.MIN_ACCEL_DIST && dist < P.MAX_ACCEL_DIST ? grav.accel( [ users.positions[3], users.positions[4]], [pos[i30], pos[i31]]) : NO_ACCEL;
             new_accel[0] += users_accel[0];
             new_accel[1] += users_accel[1];
 
-            // get player 3
+            // get accel towards player 3
             dist         = Math.sqrt(Math.pow(pos[i30]-users.positions[6],2) + Math.pow(pos[i31]-users.positions[7],2));
-            users_accel  = dist > MIN_ACCEL_DIST && dist < MAX_ACCEL_DIST ? accel( [ users.positions[6], users.positions[7]], [pos[i30], pos[i31]]) : NO_ACCEL;
+            users_accel  = dist > P.MIN_ACCEL_DIST && dist < P.MAX_ACCEL_DIST ? grav.accel( [ users.positions[6], users.positions[7]], [pos[i30], pos[i31]]) : NO_ACCEL;
             new_accel[0] += users_accel[0];
             new_accel[1] += users_accel[1];
 
@@ -178,8 +162,8 @@ function main(
             new_v[1] = vel[i31];
             vec_l = m.vec2.length(new_v);
             // Clamp velocity if it gets too fast
-            if( m.vec2.length( new_v ) > MAX_VEL ) {
-                m.vec2.scale(new_v, new_v, MAX_VEL/vec_l);
+            if( m.vec2.length( new_v ) > P.MAX_VEL ) {
+                m.vec2.scale(new_v, new_v, P.MAX_VEL/vec_l);
                 vel[i30] = new_v[0];
                 vel[i31] = new_v[1];
             }
@@ -190,16 +174,22 @@ function main(
 
         }
 
-        particle_geometry.attributes.position.needsUpdate = true;
-        particle_geometry.attributes.velocity.needsUpdate = true;
-    }
-
-    return {
-        system: particle_system,
-        update: update,
+        P.geometry.attributes.position.needsUpdate = true;
+        P.geometry.attributes.velocity.needsUpdate = true;
     };
+
+    P.set_size = function(s) {
+        var i;
+        for (i = P.sizes.length - 1; i >= 0; i -= 1){
+            P.sizes[i] = s;
+        }
+        P.geometry.attributes.size.needsUpdate = true;
+    };
+
+    return P;
 }
 
 define(deps, main);
 
 })(window);
+

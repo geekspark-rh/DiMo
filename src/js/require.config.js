@@ -14,10 +14,12 @@ requirejs.config({
         stats      : 'lib/threejs/stats.min',
         underscore : 'lib/underscore/underscore',
         glmatrix   : 'lib/glMatrix/gl-matrix',
+        datgui     : 'lib/dat.gui/dat.gui',
     },
     shim: {
-        'three' : { exports: 'THREE', },
-        'stats' : { exports: 'Stats', deps: ['three'] },
+        'three'  : { exports: 'THREE', },
+        'stats'  : { exports: 'Stats', deps: ['three'] },
+        'datgui' : { exports: 'dat' },
     },
     packages: [
         {

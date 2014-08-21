@@ -12,6 +12,7 @@ var deps = [
     'dimo/particles',
     'dimo/users',
     'dimo/viewport',
+    'dimo/config-panel',
 ];
 
 function main(

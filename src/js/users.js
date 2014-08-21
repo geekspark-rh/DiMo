@@ -7,7 +7,7 @@ var deps = [
     'three',
     'dimo/viewport',
     'dimo/origin',
-    'dimo/accel',
+    'dimo/gravity',
     'dimo/colors',
     'text!shaders/vertex.vert',
     'text!shaders/user.frag',
@@ -18,20 +18,20 @@ function main(
     THREE,
     viewport,
     origin,
-    accel,
+    grav,
     colors,
     vert,
     frag,
     m
 ) {
 
+    var U = {};
+
     var WIDTH  = viewport.WIDTH;
     var HEIGHT = viewport.HEIGHT;
 
     var i30    = 0;
     var i31    = 1;
-
-    var MAX_VEL = 4;
 
     var size;
     var vel;
@@ -45,20 +45,19 @@ function main(
         blue: {x:0,y:0},
     };
 
-    var particle_geometry;
-    var particle_system;
-    var particle_colors;
+    U.geometry;
+    U.system;
+    U.colors;
 
     var particle_count = 3;
-    var particle_size = 50;
-    var particle_mass = 2;
+    U.size = 50;
 
     var accd  = 0.50; // how much the acceleration is allowed to change each frame
     var accdh = accd / 2;
 
-    particle_geometry = new THREE.BufferGeometry();
+    U.geometry = new THREE.BufferGeometry();
 
-    particle_colors   = [];
+    U.colors   = [];
 
     // THREE.NoBlending
     // THREE.NormalBlending
@@ -90,7 +89,7 @@ function main(
 
     } );
 
-    var positions     = new Float32Array( particle_count * 3 );
+    U.positions     = new Float32Array( particle_count * 3 );
     var prevpositions = new Float32Array( particle_count * 3 );
     var values_color  = new Float32Array( particle_count * 3 );
     var values_size   = new Float32Array( particle_count );
@@ -99,11 +98,11 @@ function main(
 
     for( var v = 0; v < particle_count; v++ ) {
 
-        values_size[ v ] = particle_size;
+        values_size[ v ] = U.size;
 
-        positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * WIDTH;
-        positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * HEIGHT;
-        positions[ v * 3 + 2 ] = 10; // z is fixed
+        U.positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * WIDTH;
+        U.positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * HEIGHT;
+        U.positions[ v * 3 + 2 ] = 10; // z is fixed
 
         color = colors[ v % colors.length ];
 
@@ -117,18 +116,18 @@ function main(
 
     }
 
-    particle_geometry.addAttribute( 'position'     , new THREE.BufferAttribute( positions     , 3 ) );
-    particle_geometry.addAttribute( 'customColor'  , new THREE.BufferAttribute( values_color  , 3 ) );
-    particle_geometry.addAttribute( 'size'         , new THREE.BufferAttribute( values_size   , 1 ) );
-    particle_geometry.addAttribute( 'velocity'     , new THREE.BufferAttribute( velocities    , 3 ) );
+    U.geometry.addAttribute( 'position'     , new THREE.BufferAttribute( U.positions     , 3 ) );
+    U.geometry.addAttribute( 'customColor'  , new THREE.BufferAttribute( values_color  , 3 ) );
+    U.geometry.addAttribute( 'size'         , new THREE.BufferAttribute( values_size   , 1 ) );
+    U.geometry.addAttribute( 'velocity'     , new THREE.BufferAttribute( velocities    , 3 ) );
 
-    size  = particle_geometry.attributes.size.array;
-    vel   = particle_geometry.attributes.velocity.array;
-    pos   = particle_geometry.attributes.position.array;
+    size  = U.geometry.attributes.size.array;
+    vel   = U.geometry.attributes.velocity.array;
+    pos   = U.geometry.attributes.position.array;
 
-    particle_system = new THREE.PointCloud( particle_geometry, particle_material );
+    U.system = new THREE.PointCloud( U.geometry, particle_material );
 
-    particle_system.sortParticles = true;
+    U.system.sortParticles = true;
 
     var INPUT_RES;
     var INPUT_RES_H;
@@ -171,7 +170,7 @@ function main(
 
     var prevx = 0, prevy = 0;
     var alpha = 0.25;
-    function update() {
+    U.update = function () {
 
         for( i = 0; i < particle_count; i++ ) {
 
@@ -190,16 +189,19 @@ function main(
         }
 
         // particle_geometry.attributes.size.needsUpdate = true;
-        particle_geometry.attributes.position.needsUpdate = true;
-        particle_geometry.attributes.velocity.needsUpdate = true;
+        U.geometry.attributes.position.needsUpdate = true;
+        U.geometry.attributes.velocity.needsUpdate = true;
     }
 
-    return {
-        system    : particle_system,
-        update    : update,
-        positions : particle_system.geometry.attributes.position.array,
-        count     : particle_count,
+    U.set_size = function(s) {
+        var i;
+        for (i = P.sizes.length - 1; i >= 0; i -= 1){
+            P.sizes[i] = s;
+        }
+        P.geometry.attributes.size.needsUpdate = true;
     };
+
+    return U;
 }
 
 define(deps, main);

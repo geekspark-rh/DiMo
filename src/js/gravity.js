@@ -9,6 +9,8 @@ var deps = [
 
 function main(m) {
 
+    var G = {};
+
     var vec2 = m.vec2;
 
     var p1x;
@@ -20,29 +22,31 @@ function main(m) {
     var xd, yd; // diffs
     var ux, uy; // unit vector x
     var ax, ay; // accel values
-    var g = -9.81*1e3;
+    G.g = -9.81*1e3;
 
     var p1v  = m.vec2.create();
     var p2v  = m.vec2.create();
     var ov   = m.vec2.create(); // out vector
     var mag;
 
-    var MAX_ACCEL = 5;
+    G.MAX_ACCEL = 5;
 
-    var RANDOM_VARIANCE = 0.7;
+    G.RANDOM_VARIANCE = 0.7;
+    var variance = 1 - G.RANDOM_VARIANCE;
 
-    function glaccel(p1, p2) {
+    G.accel = function (p1, p2) {
         vec2.set(p1v, p1[0], p1[1]);
         vec2.set(p2v, p2[0], p2[1]);
         r = Math.pow(vec2.distance(p1v, p2v), 2);
         vec2.subtract(ov, p2v, p1v);
         vec2.normalize(ov, ov);
-        mag = Math.max(Math.random(), RANDOM_VARIANCE)*g/r;
-        vec2.scale(ov, ov, Math.abs(mag) < MAX_ACCEL ? mag : 0);
+        mag = Math.max(Math.random(), G.RANDOM_VARIANCE)*G.g/r;
+        vec2.scale(ov, ov, Math.abs(mag) < G.MAX_ACCEL ? mag : 0);
         return ov;
-    }
+    };
 
     var xd2, yd2;
+
     function accel(p1, p2) {
         // I wrote this one by hand thinking it'd be faster than relying on
         // vector library functions with the overhead of many function calls.
@@ -67,14 +71,14 @@ function main(m) {
         ux = xd / nv;
         uy = yd / nv;
 
-        ax = mass * g * ux / r;
-        ay = mass * g * uy / r;
+        ax = mass * G.g * ux / r;
+        ay = mass * G.g * uy / r;
 
         return [ax, ay];
 
     }
 
-    return glaccel;
+    return G;
 }
 
 define(deps, main);
