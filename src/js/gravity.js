@@ -1,7 +1,7 @@
 /* global define */
 /* jshint browser: true */
 
-(function (global) {
+(function () {
 
 var deps = [
     'glmatrix',
@@ -13,10 +13,6 @@ function main(m) {
 
     var vec2 = m.vec2;
 
-    var p1x;
-    var p1y;
-    var p2x;
-    var p2y;
     var r;
     var nv; // normalization divisor
     var xd, yd; // diffs
@@ -31,33 +27,27 @@ function main(m) {
 
     G.MAX_ACCEL = 5;
 
-    G.RANDOM_VARIANCE = 0.7;
-    var variance = 1 - G.RANDOM_VARIANCE;
+    G.RANDOM_VARIANCE = 0.2;
 
-    G.accel = function (p1, p2) {
-        vec2.set(p1v, p1[0], p1[1]);
-        vec2.set(p2v, p2[0], p2[1]);
+    G.accel = function (p1x, p1y, p2x, p2y, f) {
+        vec2.set(p1v, p1x, p1y);
+        vec2.set(p2v, p2x, p2y);
         r = Math.pow(vec2.distance(p1v, p2v), 2);
         vec2.subtract(ov, p2v, p1v);
         vec2.normalize(ov, ov);
-        mag = Math.max(Math.random(), G.RANDOM_VARIANCE)*G.g/r;
+        mag = f*G.g/r;
         vec2.scale(ov, ov, Math.abs(mag) < G.MAX_ACCEL ? mag : 0);
         return ov;
     };
 
     var xd2, yd2;
 
-    function accel(p1, p2) {
+    function accel(p1x, p1y, p2x, p2y, f) {
         // I wrote this one by hand thinking it'd be faster than relying on
         // vector library functions with the overhead of many function calls.
         // It's MUCH MUCH faster than threejs vector math, but it's exactly the
         // same speed as glmatrix.  glmatrix is easier to read so we'll go with
         // that...
-
-        p1x = p1[0];
-        p1y = p1[1];
-        p2x = p2[0];
-        p2y = p2[1];
 
         xd = p2x - p1x;
         yd = p2y - p1y;
@@ -71,8 +61,8 @@ function main(m) {
         ux = xd / nv;
         uy = yd / nv;
 
-        ax = mass * G.g * ux / r;
-        ay = mass * G.g * uy / r;
+        ax = f * G.g * ux / r;
+        ay = f * G.g * uy / r;
 
         return [ax, ay];
 
@@ -83,6 +73,4 @@ function main(m) {
 
 define(deps, main);
 
-})(window);
-
-
+})();

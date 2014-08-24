@@ -21,8 +21,7 @@ function main(
     grav,
     colors,
     vert,
-    frag,
-    m
+    frag
 ) {
 
     var U = {};
@@ -45,19 +44,13 @@ function main(
         blue: {x:0,y:0},
     };
 
-    U.geometry;
-    U.system;
-    U.colors;
-
-    var particle_count = 3;
-    U.size = 50;
+    U.count = 3;
+    U.size = 450;
 
     var accd  = 0.50; // how much the acceleration is allowed to change each frame
     var accdh = accd / 2;
 
     U.geometry = new THREE.BufferGeometry();
-
-    U.colors   = [];
 
     // THREE.NoBlending
     // THREE.NormalBlending
@@ -74,7 +67,7 @@ function main(
 
     var uniforms = {
         color:     { type: "c", value: new THREE.Color( 0xffffff ) },
-        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particle.png" ) }
+        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particle-wide-glow-big.png" ) }
     };
 
     var particle_material = new THREE.ShaderMaterial( {
@@ -89,16 +82,16 @@ function main(
 
     } );
 
-    U.positions     = new Float32Array( particle_count * 3 );
-    var prevpositions = new Float32Array( particle_count * 3 );
-    var values_color  = new Float32Array( particle_count * 3 );
-    var values_size   = new Float32Array( particle_count );
-    var velocities    = new Float32Array( particle_count * 3 );
+    U.positions    = new Float32Array( U.count * 3 );
+    U.prevpos      = new Float32Array( U.count * 3 );
+    U.colors       = new Float32Array( U.count * 3 );
+    U.sizes        = new Float32Array( U.count );
+    var velocities = new Float32Array( U.count * 3 );
     var color;
 
-    for( var v = 0; v < particle_count; v++ ) {
+    for( var v = 0; v < U.count; v++ ) {
 
-        values_size[ v ] = U.size;
+        U.sizes[ v ] = U.size;
 
         U.positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * WIDTH;
         U.positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * HEIGHT;
@@ -106,20 +99,19 @@ function main(
 
         color = colors[ v % colors.length ];
 
-        values_color[ v * 3 + 0 ] = color.r;
-        values_color[ v * 3 + 1 ] = color.g;
-        values_color[ v * 3 + 2 ] = color.b;
+        U.colors[ v * 3 + 0 ] = color.r;
+        U.colors[ v * 3 + 1 ] = color.g;
+        U.colors[ v * 3 + 2 ] = color.b;
 
         velocities[ v * 3 + 0 ] = 0;
         velocities[ v * 3 + 1 ] = 0;
-        velocities[ v * 3 + 2 ] = 0; // z is fixed
 
     }
 
-    U.geometry.addAttribute( 'position'     , new THREE.BufferAttribute( U.positions     , 3 ) );
-    U.geometry.addAttribute( 'customColor'  , new THREE.BufferAttribute( values_color  , 3 ) );
-    U.geometry.addAttribute( 'size'         , new THREE.BufferAttribute( values_size   , 1 ) );
-    U.geometry.addAttribute( 'velocity'     , new THREE.BufferAttribute( velocities    , 3 ) );
+    U.geometry.addAttribute( 'position'     , new THREE.BufferAttribute( U.positions,  3 ) );
+    U.geometry.addAttribute( 'customColor'  , new THREE.BufferAttribute( U.colors, 3 ) );
+    U.geometry.addAttribute( 'size'         , new THREE.BufferAttribute( U.sizes,  1 ) );
+    U.geometry.addAttribute( 'velocity'     , new THREE.BufferAttribute( velocities,   3 ) );
 
     size  = U.geometry.attributes.size.array;
     vel   = U.geometry.attributes.velocity.array;
@@ -169,10 +161,14 @@ function main(
     var colornames = ['red', 'green', 'blue'];
 
     var prevx = 0, prevy = 0;
-    var alpha = 0.25;
+
+    U.smoothing         = 0.25;
+    var CUR_POS_WEIGHT  = U.smoothing;
+    var LAST_POS_WEIGHT = 1 - U.smoothing;
+
     U.update = function () {
 
-        for( i = 0; i < particle_count; i++ ) {
+        for( i = 0; i < U.count; i++ ) {
 
             i30 = i * 3;
             i31 = i30+ 1;
@@ -180,25 +176,25 @@ function main(
             // size[ i ] = Math.sqrt(Math.pow(vel[i30],2) + Math.pow(vel[i31],2));
 
             // Add acc to vel
-            pos[i30] = (alpha * -input[colornames[i]].x) + (1 - alpha) * prevpositions[i30];
-            pos[i31] = (alpha * -input[colornames[i]].y) + (1 - alpha) * prevpositions[i31];
+            pos[i30] = (CUR_POS_WEIGHT * -input[colornames[i]].x) + LAST_POS_WEIGHT * U.prevpos[i30];
+            pos[i31] = (CUR_POS_WEIGHT * -input[colornames[i]].y) + LAST_POS_WEIGHT * U.prevpos[i31];
 
-            prevpositions[i30] = pos[i30];
-            prevpositions[i31] = pos[i31];
+            U.prevpos[i30] = pos[i30];
+            U.prevpos[i31] = pos[i31];
 
         }
 
         // particle_geometry.attributes.size.needsUpdate = true;
         U.geometry.attributes.position.needsUpdate = true;
         U.geometry.attributes.velocity.needsUpdate = true;
-    }
+    };
 
     U.set_size = function(s) {
         var i;
-        for (i = P.sizes.length - 1; i >= 0; i -= 1){
-            P.sizes[i] = s;
+        for (i = U.sizes.length - 1; i >= 0; i -= 1){
+            U.sizes[i] = s;
         }
-        P.geometry.attributes.size.needsUpdate = true;
+        U.geometry.attributes.size.needsUpdate = true;
     };
 
     return U;

@@ -18,5 +18,3 @@ void main() {
     gl_PointSize = size;
 
 }
-
-

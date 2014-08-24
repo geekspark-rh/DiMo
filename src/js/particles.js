@@ -1,7 +1,7 @@
 /* global define */
 /* jshint browser: true */
 
-(function (global) {
+(function () {
 
 var deps = [
     'three',
@@ -27,14 +27,19 @@ function main(
     m
 ) {
 
+    function get_random_mass(s) {
+        // get random mass based on s, a scale factor
+        return Math.random() * (1 - s) + s;
+    }
+
     var P = {};
 
     var i30    = 0;
     var i31    = 1;
 
-    P.MAX_VEL      = 5;
-    P.count        = 1e5;
-    P.size = 1;
+    P.MAX_VEL = 5;
+    P.count   = 1e5/2;
+    P.size    = 10;
 
     var accd  = 1.75; // how much the acceleration is allowed to change each frame
     var accdh = accd / 2;
@@ -56,7 +61,7 @@ function main(
 
     P.uniforms = {
         color:     { type: "c", value: new THREE.Color( 0xffffff ) },
-        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/box.png" ) }
+        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particle-wide-glow.png" ) }
     };
 
     P.material = new THREE.ShaderMaterial( {
@@ -73,8 +78,9 @@ function main(
 
     P.positions  = new Float32Array( P.count * 3 );
     P.colors     = new Float32Array( P.count * 3 );
-    P.sizes      = new Float32Array( P.count );
     P.velocities = new Float32Array( P.count * 3 );
+    P.sizes      = new Float32Array( P.count );
+    P.mass       = new Float32Array( P.count );
 
     var color;
 
@@ -92,8 +98,10 @@ function main(
         P.colors[ v * 3 + 1 ] = color.g;
         P.colors[ v * 3 + 2 ] = color.b;
 
-        P.velocities[ v * 3 + 0 ] = 0;
-        P.velocities[ v * 3 + 1 ] = 0;
+        P.mass[ v ] = get_random_mass(grav.RANDOM_VARIANCE);
+
+        P.velocities[ v * 3 + 0 ] = P.positions[ v * 3 + 0];//( Math.random() * accd - accdh ) * vp.WIDTH;
+        P.velocities[ v * 3 + 1 ] = P.positions[ v * 3 + 1];//( Math.random() * accd - accdh ) * vp.WIDTH;
         P.velocities[ v * 3 + 2 ] = 0; // z is fixed
 
     }
@@ -111,20 +119,18 @@ function main(
 
     var new_accel = new Float32Array(2);
     var users_accel;
-    var dist;
+    var dist = m.vec2.create();
 
-    P.MIN_ACCEL_DIST = 22; // if a particle is closer than MIN_ACCEL_DIST to a user, don't run acceleration (prevents bunching)
-    P.MAX_ACCEL_DIST = Infinity;
+    P.MIN_ACCEL_DIST = 66; // if a particle is closer than MIN_ACCEL_DIST to a user, don't run acceleration (prevents bunching)
 
-    var NO_ACCEL = new Float32Array(2);
+    var NO_ACCEL = m.vec2.create();
 
-    var new_v = new Float32Array(2);
+    var new_v = m.vec2.create();
 
+    var i;
+    var vec_l;
     P.update = function () {
 
-        var i;
-        var user_accel;
-        var vec_l;
 
         for( i = P.count - 1; i >= 0; i-- ) {
 
@@ -133,36 +139,43 @@ function main(
 
             // size[ i ] = particle_size * ( 2 + Math.sin( 0.1 * i + time ) );
 
-            new_accel[0] = 0;
-            new_accel[1] = 0;
+            m.vec2.set(new_accel, 0, 0);
 
             // get accel towards player 1
-            dist         = Math.sqrt(Math.pow(pos[i30]-users.positions[0],2) + Math.pow(pos[i31]-users.positions[1],2));
-            users_accel  = dist > P.MIN_ACCEL_DIST && dist < P.MAX_ACCEL_DIST ? grav.accel( [ users.positions[0], users.positions[1]], [pos[i30], pos[i31]]) : NO_ACCEL;
-            new_accel[0] += users_accel[0];
-            new_accel[1] += users_accel[1];
+            m.vec2.set(dist, pos[i30]-users.positions[0], pos[i31]-users.positions[1]);
+            // users_accel = m.vec2.length(dist) > P.MIN_ACCEL_DIST ? grav.accel( users.positions[0], users.positions[1], pos[i30], pos[i31], P.mass[i]) : NO_ACCEL;
+            users_accel = grav.accel( users.positions[0], users.positions[1], pos[i30], pos[i31], P.mass[i]);
+            if (m.vec2.length(dist) < P.MIN_ACCEL_DIST) {
+                m.vec2.scale(users_accel, users_accel, -1);
+            }
+            m.vec2.add(new_accel, new_accel, users_accel);
 
             // get accel towards player 2
-            dist         = Math.sqrt(Math.pow(pos[i30]-users.positions[3],2) + Math.pow(pos[i31]-users.positions[4],2));
-            users_accel  = dist > P.MIN_ACCEL_DIST && dist < P.MAX_ACCEL_DIST ? grav.accel( [ users.positions[3], users.positions[4]], [pos[i30], pos[i31]]) : NO_ACCEL;
-            new_accel[0] += users_accel[0];
-            new_accel[1] += users_accel[1];
+            m.vec2.set(dist, pos[i30]-users.positions[3], pos[i31]-users.positions[4]);
+            // users_accel = m.vec2.length(dist) > P.MIN_ACCEL_DIST ? grav.accel( users.positions[3], users.positions[4], pos[i30], pos[i31], P.mass[i]) : NO_ACCEL;
+            users_accel = grav.accel( users.positions[3], users.positions[4], pos[i30], pos[i31], P.mass[i]);
+            if (m.vec2.length(dist) < P.MIN_ACCEL_DIST) {
+                m.vec2.scale(users_accel, users_accel, -1);
+            }
+            m.vec2.add(new_accel, new_accel, users_accel);
 
             // get accel towards player 3
-            dist         = Math.sqrt(Math.pow(pos[i30]-users.positions[6],2) + Math.pow(pos[i31]-users.positions[7],2));
-            users_accel  = dist > P.MIN_ACCEL_DIST && dist < P.MAX_ACCEL_DIST ? grav.accel( [ users.positions[6], users.positions[7]], [pos[i30], pos[i31]]) : NO_ACCEL;
-            new_accel[0] += users_accel[0];
-            new_accel[1] += users_accel[1];
+            m.vec2.set(dist, pos[i30]-users.positions[6], pos[i31]-users.positions[7]);
+            // users_accel = m.vec2.length(dist) > P.MIN_ACCEL_DIST ? grav.accel( users.positions[6], users.positions[7], pos[i30], pos[i31], P.mass[i]) : NO_ACCEL;
+            users_accel = grav.accel( users.positions[6], users.positions[7], pos[i30], pos[i31], P.mass[i]);
+            if (m.vec2.length(dist) < P.MIN_ACCEL_DIST) {
+                m.vec2.scale(users_accel, users_accel, -1);
+            }
+            m.vec2.add(new_accel, new_accel, users_accel);
 
             // Add acc to vel
-            vel[i30] = vel[i30] + new_accel[0];
-            vel[i31] = vel[i31] + new_accel[1];
+            vel[i30] += new_accel[0];
+            vel[i31] += new_accel[1];
 
-            new_v[0] = vel[i30];
-            new_v[1] = vel[i31];
+            m.vec2.set(new_v, vel[i30], vel[i31]);
             vec_l = m.vec2.length(new_v);
             // Clamp velocity if it gets too fast
-            if( m.vec2.length( new_v ) > P.MAX_VEL ) {
+            if( vec_l > P.MAX_VEL ) {
                 m.vec2.scale(new_v, new_v, P.MAX_VEL/vec_l);
                 vel[i30] = new_v[0];
                 vel[i31] = new_v[1];
@@ -178,6 +191,16 @@ function main(
         P.geometry.attributes.velocity.needsUpdate = true;
     };
 
+    // Count currently can't exceed the initial count
+    P.set_count = function(s) {
+        var i;
+        for (i = P.colors.length - 1; i >= s; i -= 1){
+            P.colors[i] = 0;
+        }
+        P.count = s;
+        P.geometry.attributes.customColor.needsUpdate = true;
+    };
+
     P.set_size = function(s) {
         var i;
         for (i = P.sizes.length - 1; i >= 0; i -= 1){
@@ -186,10 +209,17 @@ function main(
         P.geometry.attributes.size.needsUpdate = true;
     };
 
+    P.set_mass_variance = function(s) {
+        var i;
+        for (i = P.mass.length - 1; i >= 0; i -= 1){
+            P.mass[ i ] = get_random_mass(s);
+        }
+    };
+
     return P;
 }
 
 define(deps, main);
 
-})(window);
+})();
 
