@@ -1,4 +1,4 @@
-/* global define */
+/* global define, console */
 /* jshint browser: true */
 
 (function (global) {
@@ -62,7 +62,6 @@ function main(
         size         : { type : 'f',  value : null },
         customColor  : { type : 'c',  value : null },
         acceleration : { type : 'v3', value : null },
-        velocity     : { type : 'v3', value : null }
     };
 
     var uniforms = {
@@ -86,7 +85,6 @@ function main(
     U.prevpos      = new Float32Array( U.count * 3 );
     U.colors       = new Float32Array( U.count * 3 );
     U.sizes        = new Float32Array( U.count );
-    var velocities = new Float32Array( U.count * 3 );
     var color;
 
     for( var v = 0; v < U.count; v++ ) {
@@ -103,18 +101,13 @@ function main(
         U.colors[ v * 3 + 1 ] = color.g;
         U.colors[ v * 3 + 2 ] = color.b;
 
-        velocities[ v * 3 + 0 ] = 0;
-        velocities[ v * 3 + 1 ] = 0;
-
     }
 
     U.geometry.addAttribute( 'position'     , new THREE.BufferAttribute( U.positions,  3 ) );
     U.geometry.addAttribute( 'customColor'  , new THREE.BufferAttribute( U.colors, 3 ) );
     U.geometry.addAttribute( 'size'         , new THREE.BufferAttribute( U.sizes,  1 ) );
-    U.geometry.addAttribute( 'velocity'     , new THREE.BufferAttribute( velocities,   3 ) );
 
     size  = U.geometry.attributes.size.array;
-    vel   = U.geometry.attributes.velocity.array;
     pos   = U.geometry.attributes.position.array;
 
     U.system = new THREE.PointCloud( U.geometry, particle_material );
@@ -153,40 +146,31 @@ function main(
         console.error(e);
     }
 
-    var X_BOUND = WIDTH/1.5;
-    var Y_BOUND = HEIGHT/1.5;
-
-    var new_v;
     var i;
     var colornames = ['red', 'green', 'blue'];
 
-    var prevx = 0, prevy = 0;
-
-    U.smoothing         = 0.25;
-    var CUR_POS_WEIGHT  = U.smoothing;
-    var LAST_POS_WEIGHT = 1 - U.smoothing;
+    U.smoothing         = 0.5;
+    var LAST_POS_WEIGHT = U.smoothing;
+    var CUR_POS_WEIGHT  = 1 - U.smoothing;
 
     U.update = function () {
 
-        for( i = 0; i < U.count; i++ ) {
+        for( i = U.count - 1; i >= 0; i-- ) {
 
             i30 = i * 3;
             i31 = i30+ 1;
 
-            // size[ i ] = Math.sqrt(Math.pow(vel[i30],2) + Math.pow(vel[i31],2));
-
-            // Add acc to vel
+            // update position with data from input server, after applying input smoothing
             pos[i30] = (CUR_POS_WEIGHT * -input[colornames[i]].x) + LAST_POS_WEIGHT * U.prevpos[i30];
             pos[i31] = (CUR_POS_WEIGHT * -input[colornames[i]].y) + LAST_POS_WEIGHT * U.prevpos[i31];
 
+            // store position as previous position
             U.prevpos[i30] = pos[i30];
             U.prevpos[i31] = pos[i31];
 
         }
 
-        // particle_geometry.attributes.size.needsUpdate = true;
         U.geometry.attributes.position.needsUpdate = true;
-        U.geometry.attributes.velocity.needsUpdate = true;
     };
 
     U.set_size = function(s) {
@@ -195,6 +179,11 @@ function main(
             U.sizes[i] = s;
         }
         U.geometry.attributes.size.needsUpdate = true;
+    };
+
+    U.set_smoothing = function(s) {
+        LAST_POS_WEIGHT = s;
+        CUR_POS_WEIGHT  = 1 - s;
     };
 
     return U;

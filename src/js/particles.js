@@ -29,7 +29,7 @@ function main(
 
     function get_random_mass(s) {
         // get random mass based on s, a scale factor
-        return Math.random() * (1 - s) + s;
+        return Math.random() * (s) + (1 - s);
     }
 
     var P = {};
@@ -37,9 +37,12 @@ function main(
     var i30    = 0;
     var i31    = 1;
 
-    P.MAX_VEL = 5;
-    P.count   = 1e5/2;
-    P.size    = 10;
+    P.MAX_VEL = 4;
+    P.count   = 1e4;
+    P.size    = 16;
+
+    // adjust size to match screen size
+    P.size = P.size/1500 * vp.WIDTH;
 
     var accd  = 1.75; // how much the acceleration is allowed to change each frame
     var accdh = accd / 2;
@@ -56,12 +59,16 @@ function main(
         size         : { type : 'f',  value : null },
         customColor  : { type : 'c',  value : null },
         acceleration : { type : 'v3', value : null },
-        velocity     : { type : 'v3', value : null }
+        velocity     : { type : 'v3', value : null },
+        accel_mag    : { type : 'v',  value : null },
+        vel_mag      : { type : 'v',  value : null },
     };
 
     P.uniforms = {
-        color:     { type: "c", value: new THREE.Color( 0xffffff ) },
-        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particle-wide-glow.png" ) }
+        color     : { type : 'c', value : new THREE.Color( 0xffffff ) },
+        texture   : { type : 't', value : THREE.ImageUtils.loadTexture( 'img/particle-wide-glow.png' ) },
+        max_vel   : { type : 'f', value : P.MAX_VEL },
+        max_accel : { type : 'f', value : grav.MAX_ACCEL },
     };
 
     P.material = new THREE.ShaderMaterial( {
@@ -81,10 +88,12 @@ function main(
     P.velocities = new Float32Array( P.count * 3 );
     P.sizes      = new Float32Array( P.count );
     P.mass       = new Float32Array( P.count );
+    P.accel_mag  = new Float32Array( P.count );
+    P.vel_mag    = new Float32Array( P.count );
 
     var color;
 
-    for( var v = 0; v < P.count; v++ ) {
+    for (var v = P.count - 1; v >= 0; v--) {
 
         P.sizes[ v ] = P.size;
 
@@ -100,16 +109,18 @@ function main(
 
         P.mass[ v ] = get_random_mass(grav.RANDOM_VARIANCE);
 
-        P.velocities[ v * 3 + 0 ] = P.positions[ v * 3 + 0];//( Math.random() * accd - accdh ) * vp.WIDTH;
-        P.velocities[ v * 3 + 1 ] = P.positions[ v * 3 + 1];//( Math.random() * accd - accdh ) * vp.WIDTH;
+        P.velocities[ v * 3 + 0 ] = P.positions[ v * 3 + 0] / vp.WIDTH;//( Math.random() * accd - accdh ) * vp.WIDTH;
+        P.velocities[ v * 3 + 1 ] = P.positions[ v * 3 + 1] / vp.HEIGHT;//( Math.random() * accd - accdh ) * vp.WIDTH;
         P.velocities[ v * 3 + 2 ] = 0; // z is fixed
 
     }
 
-    P.geometry.addAttribute( 'position'     , new THREE.BufferAttribute( P.positions     , 3 ) );
-    P.geometry.addAttribute( 'customColor'  , new THREE.BufferAttribute( P.colors  , 3 ) );
-    P.geometry.addAttribute( 'size'         , new THREE.BufferAttribute( P.sizes   , 1 ) );
-    P.geometry.addAttribute( 'velocity'     , new THREE.BufferAttribute( P.velocities    , 3 ) );
+    P.geometry.addAttribute( 'position'    , new THREE.BufferAttribute( P.positions  , 3 ) );
+    P.geometry.addAttribute( 'customColor' , new THREE.BufferAttribute( P.colors     , 3 ) );
+    P.geometry.addAttribute( 'velocity'    , new THREE.BufferAttribute( P.velocities , 3 ) );
+    P.geometry.addAttribute( 'size'        , new THREE.BufferAttribute( P.sizes      , 1 ) );
+    P.geometry.addAttribute( 'vel_mag'     , new THREE.BufferAttribute( P.vel_mag    , 1 ) );
+    P.geometry.addAttribute( 'accel_mag'   , new THREE.BufferAttribute( P.accel_mag  , 1 ) );
 
     var vel   = P.geometry.attributes.velocity.array;
     var pos   = P.geometry.attributes.position.array;
@@ -121,9 +132,7 @@ function main(
     var users_accel;
     var dist = m.vec2.create();
 
-    P.MIN_ACCEL_DIST = 66; // if a particle is closer than MIN_ACCEL_DIST to a user, don't run acceleration (prevents bunching)
-
-    var NO_ACCEL = m.vec2.create();
+    P.MIN_ACCEL_DIST = 44; // if a particle is closer than MIN_ACCEL_DIST to a user, don't run acceleration (prevents bunching)
 
     var new_v = m.vec2.create();
 
@@ -181,12 +190,17 @@ function main(
                 vel[i31] = new_v[1];
             }
 
+            P.vel_mag[i] = m.vec2.length(new_v);
+            P.accel_mag[i] = m.vec2.length(new_accel);
+
             // Add vel to pos
             pos[i30] += vel[i30];
             pos[i31] += vel[i31];
 
         }
 
+        P.geometry.attributes.vel_mag.needsUpdate = true;
+        P.geometry.attributes.accel_mag.needsUpdate = true;
         P.geometry.attributes.position.needsUpdate = true;
         P.geometry.attributes.velocity.needsUpdate = true;
     };

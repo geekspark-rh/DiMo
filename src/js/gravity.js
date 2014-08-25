@@ -25,7 +25,7 @@ function main(m) {
     var ov   = m.vec2.create(); // out vector
     var mag;
 
-    G.MAX_ACCEL = 5;
+    G.MAX_ACCEL = 10;
 
     G.RANDOM_VARIANCE = 0.2;
 

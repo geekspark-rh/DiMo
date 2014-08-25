@@ -25,19 +25,17 @@ function main(
     grav_folder.add(gravity, 'MAX_ACCEL', 0, 100).step(1);
     grav_folder.add(gravity, 'RANDOM_VARIANCE', 0, 1)
         .step(0.01)
-        .onChange(function (value) {
-            particles.set_mass_variance(value);
-        });
+        .onChange(particles.set_mass_variance);
 
     // Users
 
     var users_folder = gui.addFolder('Users');
 
-    users_folder.add(users, 'smoothing', 0, 1).step(0.1);
+    users_folder.add(users, 'smoothing', 0, 1)
+        .step(0.1)
+        .onChange(users.set_smoothing);
     users_folder.add(users, 'size', 0, 500)
-        .onChange(function (value) {
-            users.set_size(value);
-        });
+        .onChange(users.set_size);
 
     // Particles
 
@@ -49,11 +47,9 @@ function main(
             particles.set_count(value);
         });
     particles_folder.add(particles, 'MAX_VEL', 0, 20);
-    particles_folder.add(particles, 'MIN_ACCEL_DIST', 0, 1000);
+    particles_folder.add(particles, 'MIN_ACCEL_DIST', 0, 200);
     particles_folder.add(particles, 'size', 0, 40)
-        .onChange(function (value) {
-            particles.set_size(value);
-        });
+        .onChange(particles.set_size);
 
     grav_folder.open();
     users_folder.open();
