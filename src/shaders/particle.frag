@@ -2,9 +2,9 @@
 #define PI2 6.283185
 #define PI  3.141592
 #define HPI 1.57080
-#define B_ADD 1.76714
+#define R_ADD 1.76714
 #define G_ADD 3.92699
-#define R_ADD 5.89048
+#define B_ADD 5.89048
 
 uniform vec3 color;
 uniform sampler2D texture;
@@ -27,12 +27,15 @@ void main() {
     // G = (sin(accel_m*pi*2+5*pi/4)+1)/2
     // B = (sin(accel_m*pi*2+7.5*pi/4)+1)/2
 
-    newcolor = vec3(vel_m/max_vel+accel_m/max_accel, vel_m/max_vel+accel_m/max_accel, vel_m/max_vel+accel_m/max_accel);
-    /* newcolor = vec3(accel_m/max_accel, accel_m/max_accel, accel_m/max_accel); */
-    /* newcolor = vec3(vel_m/max_vel, vel_m/max_vel, vel_m/max_vel); */
+    /* newcolor = vec3(vel_m/max_vel+accel_m/max_accel); */
+    /* newcolor = vec3(vel_m+accel_m); */
+    newcolor = vec3(vel_m+accel_m/max_accel);
+    /* newcolor = vec3(vel_m/max_vel+accel_m); */
+    /* newcolor = vec3(accel_m/max_accel); */
+    /* newcolor = vec3(vel_m/max_vel); */
     newcolor *= PI2;
     newcolor += color_cycle_add;
-    newcolor = sin(newcolor);
+    newcolor = cos(newcolor);
     newcolor += 1.0;
     newcolor /= 2.0;
 

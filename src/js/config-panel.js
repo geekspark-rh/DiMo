@@ -34,7 +34,7 @@ function main(
     users_folder.add(users, 'smoothing', 0, 1)
         .step(0.1)
         .onChange(users.set_smoothing);
-    users_folder.add(users, 'size', 0, 500)
+    users_folder.add(users, 'size', 0, 256)
         .onChange(users.set_size);
 
     // Particles
@@ -46,9 +46,9 @@ function main(
         .onChange(function (value) {
             particles.set_count(value);
         });
-    particles_folder.add(particles, 'MAX_VEL', 0, 20);
+    particles_folder.add(particles, 'MAX_VEL', 0, 16);
     particles_folder.add(particles, 'MIN_ACCEL_DIST', 0, 200);
-    particles_folder.add(particles, 'size', 0, 40)
+    particles_folder.add(particles, 'size', 0, 64)
         .onChange(particles.set_size);
 
     grav_folder.open();

@@ -45,7 +45,7 @@ function main(
     };
 
     U.count = 3;
-    U.size = 450;
+    U.size = 256;
 
     var accd  = 0.50; // how much the acceleration is allowed to change each frame
     var accdh = accd / 2;

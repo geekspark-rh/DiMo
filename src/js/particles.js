@@ -111,6 +111,9 @@ function main(
 
         P.velocities[ v * 3 + 0 ] = P.positions[ v * 3 + 0] / vp.WIDTH;//( Math.random() * accd - accdh ) * vp.WIDTH;
         P.velocities[ v * 3 + 1 ] = P.positions[ v * 3 + 1] / vp.HEIGHT;//( Math.random() * accd - accdh ) * vp.WIDTH;
+        // These two are semi-circular initial orbit
+        // P.velocities[ v * 3 + 0 ] = P.positions[v*3] * P.positions[v*3]/Math.abs(P.positions[v*3]) *P.positions[v*3+1]/Math.abs(P.positions[v*3+1]);//P.positions[ v * 3 + 0] / vp.WIDTH;
+        // P.velocities[ v * 3 + 1 ] = -1*P.positions[v*3+1] * P.positions[v*3]/Math.abs(P.positions[v*3]) *P.positions[v*3+1]/Math.abs(P.positions[v*3+1]);//P.positions[ v * 3 + 0] / vp.WIDTH;
         P.velocities[ v * 3 + 2 ] = 0; // z is fixed
 
     }
