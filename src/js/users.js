@@ -46,6 +46,8 @@ function main(
 
     U.count = 3;
     U.size = 256;
+    U.FLIP_X = -1;
+    U.FLIP_Y = -1;
 
     var accd  = 0.50; // how much the acceleration is allowed to change each frame
     var accdh = accd / 2;
@@ -161,8 +163,8 @@ function main(
             i31 = i30+ 1;
 
             // update position with data from input server, after applying input smoothing
-            pos[i30] = (CUR_POS_WEIGHT * -input[colornames[i]].x) + LAST_POS_WEIGHT * U.prevpos[i30];
-            pos[i31] = (CUR_POS_WEIGHT * -input[colornames[i]].y) + LAST_POS_WEIGHT * U.prevpos[i31];
+            pos[i30] = (CUR_POS_WEIGHT * U.FLIP_X * input[colornames[i]].x) + LAST_POS_WEIGHT * U.prevpos[i30];
+            pos[i31] = (CUR_POS_WEIGHT * U.FLIP_Y * input[colornames[i]].y) + LAST_POS_WEIGHT * U.prevpos[i31];
 
             // store position as previous position
             U.prevpos[i30] = pos[i30];

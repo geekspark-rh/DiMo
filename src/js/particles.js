@@ -5,6 +5,7 @@
 
 var deps = [
     'three',
+    'dimo/config',
     'dimo/viewport',
     'dimo/origin',
     'dimo/gravity',
@@ -17,6 +18,7 @@ var deps = [
 
 function main(
     THREE,
+    conf,
     vp,
     origin,
     grav,
@@ -68,7 +70,7 @@ function main(
         color     : { type : 'c', value : new THREE.Color( 0xffffff ) },
         texture   : { type : 't', value : THREE.ImageUtils.loadTexture( 'img/particle-wide-glow.png' ) },
         max_vel   : { type : 'f', value : P.MAX_VEL },
-        max_accel : { type : 'f', value : grav.MAX_ACCEL },
+        max_accel : { type : 'f', value : conf.MAX_ACCEL },
     };
 
     P.material = new THREE.ShaderMaterial( {
@@ -107,7 +109,7 @@ function main(
         P.colors[ v * 3 + 1 ] = color.g;
         P.colors[ v * 3 + 2 ] = color.b;
 
-        P.mass[ v ] = get_random_mass(grav.RANDOM_VARIANCE);
+        P.mass[ v ] = get_random_mass(conf.RANDOM_GRAVITY_VARIANCE);
 
         P.velocities[ v * 3 + 0 ] = P.positions[ v * 3 + 0] / vp.WIDTH;//( Math.random() * accd - accdh ) * vp.WIDTH;
         P.velocities[ v * 3 + 1 ] = P.positions[ v * 3 + 1] / vp.HEIGHT;//( Math.random() * accd - accdh ) * vp.WIDTH;

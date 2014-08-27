@@ -4,6 +4,7 @@
 (function (global) {
 
 var deps = [
+    'dimo/config',
     'dimo/particles',
     'dimo/users',
     'dimo/gravity',
@@ -11,6 +12,7 @@ var deps = [
 ];
 
 function main(
+    conf,
     particles,
     users,
     gravity,
@@ -22,8 +24,8 @@ function main(
     // Gravity
 
     var grav_folder = gui.addFolder('Gravity');
-    grav_folder.add(gravity, 'MAX_ACCEL', 0, 100).step(1);
-    grav_folder.add(gravity, 'RANDOM_VARIANCE', 0, 1)
+    grav_folder.add(conf, 'MAX_ACCEL', 0, 100).step(1);
+    grav_folder.add(conf, 'RANDOM_GRAVITY_VARIANCE', 0, 1)
         .step(0.01)
         .onChange(particles.set_mass_variance);
 
