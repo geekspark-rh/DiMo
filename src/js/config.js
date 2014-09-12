@@ -7,9 +7,14 @@ var deps = [];
 
 function main() {
     var config = {
-        MAX_ACCEL               : 10,
+        MAX_ACCEL               : 1,
         RANDOM_GRAVITY_VARIANCE : 0.2,
         G                       : -9.81*1e3,
+        DISPLAY_STATS           : false,
+    };
+
+    config.set_value = function (name, value) {
+        config[name] = value;
     };
 
     return config;

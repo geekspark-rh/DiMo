@@ -45,9 +45,6 @@ function main(
     P.count   = 1e4;
     P.size    = 16;
 
-    // adjust size to match screen size
-    P.size = P.size/1500 * vp.WIDTH;
-
     var accd  = 1.75; // how much the acceleration is allowed to change each frame
     var accdh = accd / 2;
 

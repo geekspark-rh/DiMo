@@ -13,6 +13,8 @@ var deps = [
     'dimo/players',
     'dimo/viewport',
     'dimo/config-panel',
+    'dimo/config',
+    'dimo/timer',
 ];
 
 function main(
@@ -23,7 +25,10 @@ function main(
     scene,
     particles,
     players,
-    viewport
+    viewport,
+    panel,
+    conf,
+    timer
 ) {
 
     var WIDTH  = viewport.WIDTH;
@@ -76,10 +81,16 @@ function main(
 
         //
 
-        stats = new Stats();
-        stats.domElement.style.position = 'absolute';
-        stats.domElement.style.top = '0px';
-        container.appendChild( stats.domElement );
+        if (conf.DISPLAY_STATS) {
+            stats = new Stats();
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0px';
+            container.appendChild( stats.domElement );
+        }
+
+        //
+
+        timer.start_timer();
 
         //
 
@@ -108,7 +119,9 @@ function main(
         if (delta > interval) {
             then = now - (delta % interval);
             render();
-            stats.update();
+            if (conf.DISPLAY_STATS) {
+                stats.update();
+            }
         }
 
     }

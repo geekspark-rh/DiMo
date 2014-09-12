@@ -27,16 +27,7 @@ vec3 color_cycle_add = vec3(R_ADD, G_ADD, B_ADD);
 
 void main() {
 
-    // R = (sin(accel_m*pi*2+2.25*pi/4)+1)/2
-    // G = (sin(accel_m*pi*2+5*pi/4)+1)/2
-    // B = (sin(accel_m*pi*2+7.5*pi/4)+1)/2
-
-    /* cycler = vec3(vel_m/max_vel+accel_m/max_accel); */
-    /* cycler = vec3(vel_m+accel_m); */
     cycler = vec3(vel_m+accel_m/max_accel);
-    /* cycler = vec3(vel_m/max_vel+accel_m); */
-    /* cycler = vec3(accel_m/max_accel); */
-    /* cycler = vec3(vel_m/max_vel); */
     cycler *= PI2;
     cycler += color_cycle_add;
     cycler = cos(cycler);
