@@ -1446,9 +1446,9 @@ dat.color.interpret = (function (toString, common) {
                 common.isNumber(original.b)) {
               return {
                 space: 'RGB',
-                r: original.r,
-                g: original.g,
-                b: original.b
+                r: original.r * 255,
+                g: original.g * 255,
+                b: original.b * 255
               }
             }
             return false;
@@ -1456,9 +1456,9 @@ dat.color.interpret = (function (toString, common) {
 
           write: function(color) {
             return {
-              r: color.r,
-              g: color.g,
-              b: color.b
+              r: color.r / 255,
+              g: color.g / 255,
+              b: color.b / 255
             }
           }
         },

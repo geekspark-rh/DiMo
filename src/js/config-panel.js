@@ -6,20 +6,26 @@
 var deps = [
     'dimo/config',
     'dimo/particles',
-    'dimo/users',
+    'dimo/players',
     'dimo/gravity',
+    'dimo/particle_colors',
+    'dimo/presets',
     'datgui',
 ];
 
 function main(
     conf,
     particles,
-    users,
+    players,
     gravity,
+    particle_colors,
+    presets,
     dat
 ) {
 
-    var gui = new dat.GUI();
+    var gui = new dat.GUI({
+        load: presets
+    });
 
     // Gravity
 
@@ -29,15 +35,15 @@ function main(
         .step(0.01)
         .onChange(particles.set_mass_variance);
 
-    // Users
+    // players
 
-    var users_folder = gui.addFolder('Users');
+    var players_folder = gui.addFolder('players');
 
-    users_folder.add(users, 'smoothing', 0, 1)
+    players_folder.add(players, 'smoothing', 0, 1)
         .step(0.1)
-        .onChange(users.set_smoothing);
-    users_folder.add(users, 'size', 0, 256)
-        .onChange(users.set_size);
+        .onChange(players.set_smoothing);
+    players_folder.add(players, 'size', 0, 256)
+        .onChange(players.set_size);
 
     // Particles
 
@@ -53,12 +59,17 @@ function main(
     particles_folder.add(particles, 'size', 0, 64)
         .onChange(particles.set_size);
 
+    particles_folder.addColor(particle_colors, 'color0').onChange(particles.set_color0);
+    particles_folder.addColor(particle_colors, 'color1').onChange(particles.set_color1);
+    particles_folder.addColor(particle_colors, 'color2').onChange(particles.set_color2);
+
     grav_folder.open();
-    users_folder.open();
+    players_folder.open();
     particles_folder.open();
 
     gui.remember(gravity);
     gui.remember(particles);
+    gui.remember(particle_colors);
 
     return gui;
 

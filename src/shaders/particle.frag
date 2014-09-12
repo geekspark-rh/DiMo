@@ -7,6 +7,9 @@
 #define B_ADD 5.89048
 
 uniform vec3 color;
+uniform vec3 color0;
+uniform vec3 color1;
+uniform vec3 color2;
 uniform sampler2D texture;
 
 uniform float max_vel;
@@ -17,6 +20,7 @@ varying vec3 vColor;
 varying float vel_m;
 varying float accel_m;
 
+vec3 cycler;
 vec3 newcolor;
 vec3 inactive_color = vec3(0.6, 0.6, 0.6);
 vec3 color_cycle_add = vec3(R_ADD, G_ADD, B_ADD);
@@ -27,22 +31,26 @@ void main() {
     // G = (sin(accel_m*pi*2+5*pi/4)+1)/2
     // B = (sin(accel_m*pi*2+7.5*pi/4)+1)/2
 
-    /* newcolor = vec3(vel_m/max_vel+accel_m/max_accel); */
-    /* newcolor = vec3(vel_m+accel_m); */
-    newcolor = vec3(vel_m+accel_m/max_accel);
-    /* newcolor = vec3(vel_m/max_vel+accel_m); */
-    /* newcolor = vec3(accel_m/max_accel); */
-    /* newcolor = vec3(vel_m/max_vel); */
-    newcolor *= PI2;
-    newcolor += color_cycle_add;
-    newcolor = cos(newcolor);
-    newcolor += 1.0;
-    newcolor /= 2.0;
+    /* cycler = vec3(vel_m/max_vel+accel_m/max_accel); */
+    /* cycler = vec3(vel_m+accel_m); */
+    cycler = vec3(vel_m+accel_m/max_accel);
+    /* cycler = vec3(vel_m/max_vel+accel_m); */
+    /* cycler = vec3(accel_m/max_accel); */
+    /* cycler = vec3(vel_m/max_vel); */
+    cycler *= PI2;
+    cycler += color_cycle_add;
+    cycler = cos(cycler);
+    cycler += 1.0;
+    cycler /= 2.0;
 
-    /* newcolor = vec3(accel_m*max_accel, accel_m*max_accel * PI, accel_m*max_accel * PI2); */
-    /* newcolor *= PI2; */
-    /* newcolor = sin(newcolor); */
-    /* newcolor += inactive_color; */
+    newcolor = cycler.x * color0
+             + cycler.y * color1
+             + cycler.z * color2;
+
+    /* cycler = vec3(accel_m*max_accel, accel_m*max_accel * PI, accel_m*max_accel * PI2); */
+    /* cycler *= PI2; */
+    /* cycler = sin(cycler); */
+    /* cycler += inactive_color; */
 
     gl_FragColor = vec4(newcolor, 1.0) * texture2D( texture, gl_PointCoord );;
     /* gl_FragColor = vec4( color * vColor * vec3(accel_m / 1.0, accel_m / 2.0, accel_m / 3.0), 1.0 ) * texture2D( texture, gl_PointCoord );; */

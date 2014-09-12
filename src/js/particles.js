@@ -9,11 +9,12 @@ var deps = [
     'dimo/viewport',
     'dimo/origin',
     'dimo/gravity',
-    'dimo/colors',
-    'dimo/users',
+    'dimo/particle_colors',
+    'dimo/players',
     'text!shaders/vertex.vert',
     'text!shaders/particle.frag',
     'glmatrix',
+    'underscore',
 ];
 
 function main(
@@ -23,10 +24,11 @@ function main(
     origin,
     grav,
     colors,
-    users,
+    players,
     vert,
     frag,
-    m
+    m,
+    _
 ) {
 
     function get_random_mass(s) {
@@ -68,6 +70,9 @@ function main(
 
     P.uniforms = {
         color     : { type : 'c', value : new THREE.Color( 0xffffff ) },
+        color0    : { type : 'c', value : colors.color0 },
+        color1    : { type : 'c', value : colors.color1 },
+        color2    : { type : 'c', value : colors.color2 },
         texture   : { type : 't', value : THREE.ImageUtils.loadTexture( 'img/particle-wide-glow.png' ) },
         max_vel   : { type : 'f', value : P.MAX_VEL },
         max_accel : { type : 'f', value : conf.MAX_ACCEL },
@@ -103,7 +108,7 @@ function main(
         P.positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * vp.HEIGHT;
         P.positions[ v * 3 + 2 ] = 0; // z is fixed
 
-        color = colors[ v % colors.length ];
+        color = colors[ 'color' + v % colors.length ];
 
         P.colors[ v * 3 + 0 ] = color.r;
         P.colors[ v * 3 + 1 ] = color.g;
@@ -134,10 +139,10 @@ function main(
     P.system.sortParticles = true;
 
     var new_accel = new Float32Array(2);
-    var users_accel;
+    var players_accel;
     var dist = m.vec2.create();
 
-    P.MIN_ACCEL_DIST = 44; // if a particle is closer than MIN_ACCEL_DIST to a user, don't run acceleration (prevents bunching)
+    P.MIN_ACCEL_DIST = 44; // if a particle is closer than MIN_ACCEL_DIST to a player, don't run acceleration (prevents bunching)
 
     var new_v = m.vec2.create();
 
@@ -151,36 +156,31 @@ function main(
             i30 = i * 3;
             i31 = i30+ 1;
 
-            // size[ i ] = particle_size * ( 2 + Math.sin( 0.1 * i + time ) );
-
             m.vec2.set(new_accel, 0, 0);
 
             // get accel towards player 1
-            m.vec2.set(dist, pos[i30]-users.positions[0], pos[i31]-users.positions[1]);
-            // users_accel = m.vec2.length(dist) > P.MIN_ACCEL_DIST ? grav.accel( users.positions[0], users.positions[1], pos[i30], pos[i31], P.mass[i]) : NO_ACCEL;
-            users_accel = grav.accel( users.positions[0], users.positions[1], pos[i30], pos[i31], P.mass[i]);
+            m.vec2.set(dist, pos[i30]-players.positions[0], pos[i31]-players.positions[1]);
+            players_accel = grav.accel( players.positions[0], players.positions[1], pos[i30], pos[i31], P.mass[i]);
             if (m.vec2.length(dist) < P.MIN_ACCEL_DIST) {
-                m.vec2.scale(users_accel, users_accel, -1);
+                m.vec2.scale(players_accel, players_accel, -1);
             }
-            m.vec2.add(new_accel, new_accel, users_accel);
+            m.vec2.add(new_accel, new_accel, players_accel);
 
             // get accel towards player 2
-            m.vec2.set(dist, pos[i30]-users.positions[3], pos[i31]-users.positions[4]);
-            // users_accel = m.vec2.length(dist) > P.MIN_ACCEL_DIST ? grav.accel( users.positions[3], users.positions[4], pos[i30], pos[i31], P.mass[i]) : NO_ACCEL;
-            users_accel = grav.accel( users.positions[3], users.positions[4], pos[i30], pos[i31], P.mass[i]);
+            m.vec2.set(dist, pos[i30]-players.positions[3], pos[i31]-players.positions[4]);
+            players_accel = grav.accel( players.positions[3], players.positions[4], pos[i30], pos[i31], P.mass[i]);
             if (m.vec2.length(dist) < P.MIN_ACCEL_DIST) {
-                m.vec2.scale(users_accel, users_accel, -1);
+                m.vec2.scale(players_accel, players_accel, -1);
             }
-            m.vec2.add(new_accel, new_accel, users_accel);
+            m.vec2.add(new_accel, new_accel, players_accel);
 
             // get accel towards player 3
-            m.vec2.set(dist, pos[i30]-users.positions[6], pos[i31]-users.positions[7]);
-            // users_accel = m.vec2.length(dist) > P.MIN_ACCEL_DIST ? grav.accel( users.positions[6], users.positions[7], pos[i30], pos[i31], P.mass[i]) : NO_ACCEL;
-            users_accel = grav.accel( users.positions[6], users.positions[7], pos[i30], pos[i31], P.mass[i]);
+            m.vec2.set(dist, pos[i30]-players.positions[6], pos[i31]-players.positions[7]);
+            players_accel = grav.accel( players.positions[6], players.positions[7], pos[i30], pos[i31], P.mass[i]);
             if (m.vec2.length(dist) < P.MIN_ACCEL_DIST) {
-                m.vec2.scale(users_accel, users_accel, -1);
+                m.vec2.scale(players_accel, players_accel, -1);
             }
-            m.vec2.add(new_accel, new_accel, users_accel);
+            m.vec2.add(new_accel, new_accel, players_accel);
 
             // Add acc to vel
             vel[i30] += new_accel[0];
@@ -234,6 +234,15 @@ function main(
             P.mass[ i ] = get_random_mass(s);
         }
     };
+
+    P.set_color = function(i, c) {
+        var prop = 'color' + i;
+        P.uniforms[prop].value = new THREE.Color().setRGB( c.r, c.g, c.b);
+    };
+    P.set_color0 = _.partial(P.set_color, 0);
+    P.set_color1 = _.partial(P.set_color, 1);
+    P.set_color2 = _.partial(P.set_color, 2);
+
 
     return P;
 }

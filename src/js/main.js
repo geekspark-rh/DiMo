@@ -10,7 +10,7 @@ var deps = [
     'dimo/camera',
     'dimo/scene',
     'dimo/particles',
-    'dimo/users',
+    'dimo/players',
     'dimo/viewport',
     'dimo/config-panel',
 ];
@@ -22,7 +22,7 @@ function main(
     camera,
     scene,
     particles,
-    users,
+    players,
     viewport
 ) {
 
@@ -62,7 +62,7 @@ function main(
         origin.mass = 30;
 
         scene.add( particles.system );
-        scene.add( users.system );
+        scene.add( players.system );
 
         //
 
@@ -116,7 +116,7 @@ function main(
     function render() {
 
         particles.update();
-        users.update();
+        players.update();
 
         renderer.render( scene, camera );
     }

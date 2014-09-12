@@ -8,9 +8,9 @@ var deps = [
     'dimo/viewport',
     'dimo/origin',
     'dimo/gravity',
-    'dimo/colors',
+    'dimo/player_colors',
     'text!shaders/vertex.vert',
-    'text!shaders/user.frag',
+    'text!shaders/player.frag',
     'glmatrix',
 ];
 
