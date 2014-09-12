@@ -124,7 +124,6 @@ function main(
         if (!INPUT_RES) {
             INPUT_RES = [input.w, input.h];
             INPUT_RES_H = [ INPUT_RES[0] / 2, INPUT_RES[1] / 2];
-            console.log("Set INPUT_RES: " + INPUT_RES);
         }
         input.red.x   = (input.red.x   - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
         input.red.y   = (input.red.y   - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];

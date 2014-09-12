@@ -10,12 +10,18 @@ var deps = [
 function main(conf) {
     var obj = {};
     var id;
+    var startTime = new Date().getTime();
 
     obj.start_timer = function start_timer() {
         id = setInterval(function () {
-            conf.MAX_ACCEL += new Date().getTime()/1e14;
+            var inc = Math.pow((new Date().getTime() - startTime)/100000, 2);
+            console.log("incrementing by " + inc);
+            conf.MAX_ACCEL += inc;
+            if (conf.MAX_ACCEL > 2) {
+                startTime = new Date().getTime();
+            }
             conf.MAX_ACCEL %= 2;
-        }, 400);
+        }, 100);
     };
 
     obj.stop_timer = function stop_timer() {
