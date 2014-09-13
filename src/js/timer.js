@@ -13,9 +13,9 @@ function main(conf) {
     var startTime = new Date().getTime();
 
     obj.start_timer = function start_timer() {
+        // slowly increment MAX_ACCEL
         id = setInterval(function () {
             var inc = Math.pow((new Date().getTime() - startTime)/100000, 2);
-            console.log("incrementing by " + inc);
             conf.MAX_ACCEL += inc;
             if (conf.MAX_ACCEL > 2) {
                 startTime = new Date().getTime();
