@@ -42,7 +42,7 @@ function main(
     var i31    = 1;
 
     P.MAX_VEL = 4;
-    P.count   = 1e4;
+    P.count   = 1e5;
     P.size    = 16;
 
     var accd  = 1.75; // how much the acceleration is allowed to change each frame
@@ -101,8 +101,8 @@ function main(
 
         P.sizes[ v ] = P.size;
 
-        P.positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * vp.WIDTH;
-        P.positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * vp.HEIGHT;
+        P.positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * vp.WIDTH * 5;
+        P.positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * vp.HEIGHT * 5;
         P.positions[ v * 3 + 2 ] = 0; // z is fixed
 
         color = colors[ 'color' + v % colors.length ];

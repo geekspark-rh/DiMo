@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/workspace/dimo/about.html.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="coffee">
+<meta name="settings" content="number_lines,use_css,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
+<meta name="colorscheme" content="zenburn">
+<style type="text/css">
+<!--
+pre { font-family: monospace; color: #d7d7d7;  }
+h1 { font-size: 3rem; margin: 30px 10% 10px; }
+body { font-family: 'FreeMono'; color: #d7d7d7; background-color: black; font-size: 2rem;  height: 100%;
+    font-weight: 700;
+    /*background-image: url('silhouette.jpg');*/
+    background-position: top left;
+    background-size: cover;
+}
+* { font-size: 1em; }
+.LineNr { color: #a8a8a8;  padding-bottom: 1px; }
+.helplink { border-bottom: 1px dashed grey; padding-bottom: 0.18rem; color: lightblue }
+.container-left { width: 50%; position: absolute; top: 0; left: 0; height: 100%; 
+}
+.container-right { width: 100%; position: absolute; top: 0; right: 0; height: 100%; 
+    background-image: url('silhouette-blurred.jpg');
+    background-size: 200% auto;
+    background-position: 100% 0%;
+    border-left: 3px solid black;
+    text-shadow: 0px 1px 2px rgba(0,0,0,1);
+    background-color: rgba(0,0,0,0.2);
+}
+.container-right p { padding: 0 10%; }
+.container-right p:first-child { padding: initial; }
+.clear { clear: both; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+
+    <div class="container-left"></div>
+
+    <div class="container-right">
+
+        <h1>DiMo: Particles</h1>
+
+        <p>Wave a baton; create galaxies.</p>
+
+        <p class="clear">This interactive art exhibit blends color, gravity, motion, code, math, and art into vibrant explosions, created by you!</p>
+
+        <p>Want to learn more?  Run the code yourself, or<br> contact us with questions</p>
+
+        <p><b class="helplink">github.com/geekspark-rh</b>
+            <img src="rhlink.png" alt="" />
+        </p>
+
+        <p>
+
+            <i>created by <b>@mwcz</b> and <b>@iphands</b></i>
+        </p>
+
+    </div>
+
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

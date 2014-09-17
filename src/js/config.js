@@ -10,7 +10,8 @@ function main() {
         MAX_ACCEL               : 1,
         RANDOM_GRAVITY_VARIANCE : 0.2,
         G                       : -9.81*1e3,
-        DISPLAY_STATS           : false,
+        DISPLAY_STATS           : true,
+        CONFIG_PANEL_VISIBLE    : true,
     };
 
     config.set_value = function (name, value) {

@@ -8,7 +8,7 @@ var deps = [];
 function main() {
     return {
         "preset": "RGB",
-        "closed": false,
+        "closed": true,
         "remembered": {
             "Default": {
                 "0": {},
@@ -19,7 +19,7 @@ function main() {
                 "1": {
                     "MAX_VEL": 4,
                     "MIN_ACCEL_DIST": 44,
-                    "size": 20
+                    "size": 16
                 },
                 "2": {
                     "color0": {
@@ -44,7 +44,7 @@ function main() {
                 "1": {
                     "MAX_VEL": 4,
                     "MIN_ACCEL_DIST": 44,
-                    "size": 30
+                    "size": 16
                 },
                 "2": {
                     "color0": {
@@ -69,7 +69,7 @@ function main() {
                 "1": {
                     "MAX_VEL": 2.9998276753403412,
                     "MIN_ACCEL_DIST": 28.67482336722385,
-                    "size": 6.352576253661899
+                    "size": 16
                 },
                 "2": {
                     "color0": {

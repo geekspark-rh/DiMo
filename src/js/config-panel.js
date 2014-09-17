@@ -33,6 +33,11 @@ function main(
     // values from the presets
     gui.revert(1);
 
+    // hide it if configured to be hidden
+    if (!conf.CONFIG_PANEL_VISIBLE) {
+        setTimeout(function(){gui.close();}, 500);
+    }
+
     // Gravity
 
     var grav_folder = gui.addFolder('Gravity');
