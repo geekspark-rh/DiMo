@@ -11,6 +11,7 @@ var deps = [
     'dimo/gravity',
     'dimo/particle_colors',
     'dimo/players',
+    'dimo/mouse',
     'text!shaders/vertex.vert',
     'text!shaders/particle.frag',
     'glmatrix',
@@ -25,6 +26,7 @@ function main(
     grav,
     colors,
     players,
+    mouse,
     vert,
     frag,
     m,
@@ -42,7 +44,7 @@ function main(
     var i31    = 1;
 
     P.MAX_VEL = 4;
-    P.count   = 1e5;
+    P.count   = 2e4;
     P.size    = 16;
 
     var accd  = 1.75; // how much the acceleration is allowed to change each frame
@@ -66,13 +68,14 @@ function main(
     };
 
     P.uniforms = {
-        color     : { type : 'c', value : new THREE.Color( 0xffffff ) },
-        color0    : { type : 'c', value : colors.color0 },
-        color1    : { type : 'c', value : colors.color1 },
-        color2    : { type : 'c', value : colors.color2 },
-        texture   : { type : 't', value : THREE.ImageUtils.loadTexture( 'img/particle-wide-glow.png' ) },
-        max_vel   : { type : 'f', value : P.MAX_VEL },
-        max_accel : { type : 'f', value : conf.MAX_ACCEL },
+        color     : { type : 'c',  value : new THREE.Color( 0xffffff ) },
+        color0    : { type : 'c',  value : colors.color0 },
+        color1    : { type : 'c',  value : colors.color1 },
+        color2    : { type : 'c',  value : colors.color2 },
+        texture   : { type : 't',  value : THREE.ImageUtils.loadTexture( 'img/particle-wide-glow.png' ) },
+        max_vel   : { type : 'f',  value : P.MAX_VEL },
+        max_accel : { type : 'f',  value : conf.MAX_ACCEL },
+        mouse     : { type : 'v2', value : new THREE.Vector2() },
     };
 
     P.material = new THREE.ShaderMaterial( {
@@ -101,8 +104,8 @@ function main(
 
         P.sizes[ v ] = P.size;
 
-        P.positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * vp.WIDTH * 5;
-        P.positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * vp.HEIGHT * 5;
+        P.positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * vp.WIDTH * 2;
+        P.positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * vp.HEIGHT * 2;
         P.positions[ v * 3 + 2 ] = 0; // z is fixed
 
         color = colors[ 'color' + v % colors.length ];
@@ -146,7 +149,6 @@ function main(
     var i;
     var vec_l;
     P.update = function () {
-
 
         for( i = P.count - 1; i >= 0; i-- ) {
 
@@ -200,6 +202,8 @@ function main(
             pos[i31] += vel[i31];
 
         }
+
+        P.uniforms.mouse.value = new THREE.Vector2(mouse.coords.x, mouse.coords.y);
 
         P.geometry.attributes.vel_mag.needsUpdate = true;
         P.geometry.attributes.accel_mag.needsUpdate = true;

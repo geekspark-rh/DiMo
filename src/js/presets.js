@@ -8,7 +8,7 @@ var deps = [];
 function main() {
     return {
         "preset": "RGB",
-        "closed": true,
+        "closed": false,
         "remembered": {
             "Default": {
                 "0": {},
@@ -40,13 +40,22 @@ function main() {
                 }
             },
             "RGB": {
-                "0": {},
+                "0": {
+                    "MAX_ACCEL": 1.5,
+                    "CYCLE_ACCELERATION": false,
+                    "RANDOM_GRAVITY_VARIANCE": 0
+                },
                 "1": {
-                    "MAX_VEL": 4,
-                    "MIN_ACCEL_DIST": 44,
+                    "smoothing": 0.4,
+                    "size": 42.350508357745994
+                },
+                "2": {},
+                "3": {
+                    "MAX_VEL": 10.940547992417715,
+                    "MIN_ACCEL_DIST": 0,
                     "size": 16
                 },
-                "2": {
+                "4": {
                     "color0": {
                         "r": 1,
                         "g": 0,
@@ -88,6 +97,40 @@ function main() {
                         "b": 0.5452710495963091
                     }
                 }
+            },
+            "FAST": {
+                "0": {
+                    "MAX_ACCEL": 1.5,
+                    "CYCLE_ACCELERATION": false,
+                    "RANDOM_GRAVITY_VARIANCE": 0
+                },
+                "1": {
+                    "smoothing": 0.4,
+                    "size": 42.350508357745994
+                },
+                "2": {},
+                "3": {
+                    "MAX_VEL": 10.940547992417715,
+                    "MIN_ACCEL_DIST": 0,
+                    "size": 16
+                },
+                "4": {
+                    "color0": {
+                        "r": 1,
+                        "g": 0,
+                        "b": 0
+                    },
+                    "color1": {
+                        "r": 0,
+                        "g": 1,
+                        "b": 0
+                    },
+                    "color2": {
+                        "r": 0,
+                        "g": 0.5,
+                        "b": 1
+                    }
+                }
             }
         },
         "folders": {
@@ -107,7 +150,7 @@ function main() {
                 "folders": {}
             }
         }
-    }
+    };
 }
 
 define(deps, main);

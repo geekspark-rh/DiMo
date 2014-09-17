@@ -34,7 +34,6 @@ function main(
     var WIDTH  = viewport.WIDTH;
     var HEIGHT = viewport.HEIGHT;
 
-    var container;
     var stats;
 
     var renderer;
@@ -61,8 +60,6 @@ function main(
 
     function init() {
 
-        container = document.getElementById( 'container' );
-
         origin = new THREE.Vector3( 0, 0, 0 );
         origin.mass = 30;
 
@@ -77,7 +74,7 @@ function main(
         renderer.setClearColor( 0x000000, 1 );
         renderer.setSize( WIDTH, HEIGHT );
 
-        container.appendChild( renderer.domElement );
+        document.body.appendChild( renderer.domElement );
 
         //
 
@@ -85,7 +82,7 @@ function main(
             stats = new Stats();
             stats.domElement.style.position = 'absolute';
             stats.domElement.style.top = '0px';
-            container.appendChild( stats.domElement );
+            document.body.appendChild( stats.domElement );
         }
 
         //

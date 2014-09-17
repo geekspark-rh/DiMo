@@ -9,6 +9,8 @@ var deps = [
     'dimo/origin',
     'dimo/gravity',
     'dimo/player_colors',
+    'dimo/mouse',
+    'dimo/config',
     'text!shaders/vertex.vert',
     'text!shaders/player.frag',
     'glmatrix',
@@ -20,6 +22,8 @@ function main(
     origin,
     grav,
     colors,
+    mouse,
+    config,
     vert,
     frag
 ) {
@@ -33,7 +37,6 @@ function main(
     var i31    = 1;
 
     var size;
-    var vel;
     var pos;
 
     // this is the placeholder for velocity input that will come from websocket
@@ -133,19 +136,52 @@ function main(
         input.blue.y  = (input.blue.y  - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];
     }
 
-    try {
-        // var ip = '10.192.212.90';
-        var ip = '127.0.0.1';
-        var connection = new WebSocket('ws://' + ip + ':1337');
-        connection.onopen = function () {
-            console.log("connection established");
-            // when connection opens, establish message handler
-            connection.onmessage = handle_ws_message;
-        };
-    } catch (e) {
-        console.error("Failed to create websocket connection to dimo server.");
-        console.error(e);
+    function handle_mouse_update(coords) {
+        input.red.x   = (-coords.x * WIDTH * 1.0 + WIDTH/2) * 1.3;
+        input.green.x = (-coords.x * WIDTH * 1.0 + WIDTH/2) * 1.3;
+        input.blue.x  = (-coords.x * WIDTH * 1.0 + WIDTH/2) * 1.3;
+        input.red.y   = (coords.y * HEIGHT * 1.0 - HEIGHT/2) * 1.3;
+        input.green.y = (coords.y * HEIGHT * 1.0 - HEIGHT/2) * 1.3;
+        input.blue.y  = (coords.y * HEIGHT * 1.0 - HEIGHT/2) * 1.3;
     }
+
+    function init_mouse_input() {
+        mouse.init();
+        mouse.add_callback(handle_mouse_update);
+    }
+
+    function init_websockets_input() {
+        try {
+            // var ip = '10.192.212.90';
+            var ip = '127.0.0.1';
+            var connection = new WebSocket('ws://' + ip + ':1337');
+            connection.onopen = function () {
+                console.log("connection established");
+                // when connection opens, establish message handler
+                connection.onmessage = handle_ws_message;
+            };
+        } catch (e) {
+            console.log("Failed to create websocket connection to dimo server.");
+            console.error(e);
+        }
+    }
+
+
+    function init_input() {
+        switch (config.INPUT_TYPE) {
+            case 'mouse':
+                init_mouse_input();
+            break;
+
+            case 'websockets':
+                init_websockets_input();
+            break;
+
+            default:
+                // code ...
+        }
+    }
+    init_input();
 
     var i;
     var colornames = ['red', 'green', 'blue'];

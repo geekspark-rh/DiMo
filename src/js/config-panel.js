@@ -10,17 +10,19 @@ var deps = [
     'dimo/gravity',
     'dimo/particle_colors',
     'dimo/presets',
+    'dimo/timer',
     'datgui',
     'underscore',
 ];
 
 function main(
-    conf,
+    config,
     particles,
     players,
     gravity,
     particle_colors,
     presets,
+    timer,
     dat,
     _
 ) {
@@ -34,18 +36,25 @@ function main(
     gui.revert(1);
 
     // hide it if configured to be hidden
-    if (!conf.CONFIG_PANEL_VISIBLE) {
+    if (!config.CONFIG_PANEL_VISIBLE) {
         setTimeout(function(){gui.close();}, 500);
     }
 
     // Gravity
 
     var grav_folder = gui.addFolder('Gravity');
-    grav_folder.add(conf, 'MAX_ACCEL', 0.0, 2.0)
+    grav_folder.add(config, 'MAX_ACCEL', 0.0, 2.0)
         .step(0.01)
         .listen()
-        .onChange(_.partial(conf.set_value, 'MAX_ACCEL'));
-    grav_folder.add(conf, 'RANDOM_GRAVITY_VARIANCE', 0, 1)
+        .onChange(_.partial(config.set_value, 'MAX_ACCEL'));
+
+    grav_folder.add(config, 'CYCLE_ACCELERATION')
+        .onChange(function(bool) {
+            if (bool) timer.start_timer();
+            else      timer.stop_timer();
+        });
+
+    grav_folder.add(config, 'RANDOM_GRAVITY_VARIANCE', 0, 1)
         .step(0.01)
         .onChange(particles.set_mass_variance);
 
@@ -80,6 +89,8 @@ function main(
     players_folder.open();
     particles_folder.open();
 
+    gui.remember(config);
+    gui.remember(players);
     gui.remember(gravity);
     gui.remember(particles);
     gui.remember(particle_colors);

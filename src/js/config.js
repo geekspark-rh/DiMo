@@ -12,6 +12,8 @@ function main() {
         G                       : -9.81*1e3,
         DISPLAY_STATS           : true,
         CONFIG_PANEL_VISIBLE    : true,
+        INPUT_TYPE              : ['websockets', 'mouse'][1],
+        CYCLE_ACCELERATION      : true,
     };
 
     config.set_value = function (name, value) {

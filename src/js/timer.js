@@ -10,9 +10,10 @@ var deps = [
 function main(conf) {
     var obj = {};
     var id;
-    var startTime = new Date().getTime();
+    var startTime;
 
     obj.start_timer = function start_timer() {
+        startTime = new Date().getTime();
         // slowly increment MAX_ACCEL
         id = setInterval(function () {
             var inc = Math.pow((new Date().getTime() - startTime)/100000, 2);
