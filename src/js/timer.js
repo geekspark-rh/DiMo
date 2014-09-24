@@ -7,7 +7,7 @@ var deps = [
     'dimo/config'
 ];
 
-function main(conf) {
+function main(config) {
     var obj = {};
     var id;
     var startTime;
@@ -17,11 +17,11 @@ function main(conf) {
         // slowly increment MAX_ACCEL
         id = setInterval(function () {
             var inc = Math.pow((new Date().getTime() - startTime)/100000, 2);
-            conf.MAX_ACCEL += inc;
-            if (conf.MAX_ACCEL > 2) {
+            config.MAX_ACCEL += inc;
+            if (config.MAX_ACCEL > 2) {
                 startTime = new Date().getTime();
             }
-            conf.MAX_ACCEL %= 2;
+            config.MAX_ACCEL %= 2;
         }, 100);
     };
 

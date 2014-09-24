@@ -104,8 +104,8 @@ function main(
 
         P.sizes[ v ] = P.size;
 
-        P.positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * vp.WIDTH * 2;
-        P.positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * vp.HEIGHT * 2;
+        P.positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * vp.WIDTH * 1;
+        P.positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * vp.HEIGHT * 1;
         P.positions[ v * 3 + 2 ] = 0; // z is fixed
 
         color = colors[ 'color' + v % colors.length ];

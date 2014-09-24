@@ -8,7 +8,7 @@ var deps = [
     'dimo/config',
 ];
 
-function main(m, conf) {
+function main(m, config) {
 
     var G = {};
 
@@ -31,8 +31,8 @@ function main(m, conf) {
         r = Math.pow(vec2.distance(p1v, p2v), 2);
         vec2.subtract(ov, p2v, p1v);
         vec2.normalize(ov, ov);
-        mag = f*conf.G/r;
-        vec2.scale(ov, ov, Math.abs(mag) < conf.MAX_ACCEL ? mag : 0);
+        mag = f*config.G/r;
+        vec2.scale(ov, ov, Math.abs(mag) < config.MAX_ACCEL ? mag : 0);
         return ov;
     };
 
@@ -57,8 +57,8 @@ function main(m, conf) {
         ux = xd / nv;
         uy = yd / nv;
 
-        ax = f * conf.G * ux / r;
-        ay = f * conf.G * uy / r;
+        ax = f * config.G * ux / r;
+        ay = f * config.G * uy / r;
 
         return [ax, ay];
 

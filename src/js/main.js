@@ -38,7 +38,6 @@ function main(
 
     var renderer;
 
-
     var origin;
 
     var fps = 60;
@@ -56,7 +55,6 @@ function main(
         interval = 1000 / fps;
         return fps;
     }
-    window.set_fps = set_fps;
 
     function init() {
 
@@ -130,7 +128,6 @@ function main(
 
         renderer.render( scene, camera );
     }
-
 }
 
 define(deps, main);
