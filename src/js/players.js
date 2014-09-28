@@ -39,6 +39,8 @@ function main(
     var size;
     var pos;
 
+    var player_names = ['red', 'green', 'blue'];
+
     // this is the placeholder for velocity input that will come from websocket
     // connection to the dimo server
     var input = {
@@ -122,27 +124,27 @@ function main(
     var INPUT_RES;
     var INPUT_RES_H;
 
+    var player_being_moved = 0;
+
     function handle_ws_message(message) {
         input = JSON.parse(message.data);
         if (!INPUT_RES) {
             INPUT_RES = [input.w, input.h];
             INPUT_RES_H = [ INPUT_RES[0] / 2, INPUT_RES[1] / 2];
         }
-        input.red.x   = (input.red.x   - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
-        input.red.y   = (input.red.y   - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];
-        input.green.x = (input.green.x - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
-        input.green.y = (input.green.y - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];
-        input.blue.x  = (input.blue.x  - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
-        input.blue.y  = (input.blue.y  - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];
+        input.player_names[0].x = (input.player_names[0].x - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
+        input.player_names[0].y = (input.player_names[0].y - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];
+        input.player_names[1].x = (input.player_names[1].x - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
+        input.player_names[1].y = (input.player_names[1].y - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];
+        input.player_names[2].x = (input.player_names[2].x - INPUT_RES_H[0]) * 1.75 * WIDTH  / INPUT_RES[0];
+        input.player_names[2].y = (input.player_names[2].y - INPUT_RES_H[1]) * 1.75 * HEIGHT / INPUT_RES[1];
     }
 
     function handle_mouse_update(coords) {
-        input.red.x   = (-coords.x * WIDTH * 1.0 + WIDTH/2) * 1.3;
-        input.green.x = (-coords.x * WIDTH * 1.0 + WIDTH/2) * 1.3;
-        input.blue.x  = (-coords.x * WIDTH * 1.0 + WIDTH/2) * 1.3;
-        input.red.y   = (coords.y * HEIGHT * 1.0 - HEIGHT/2) * 1.3;
-        input.green.y = (coords.y * HEIGHT * 1.0 - HEIGHT/2) * 1.3;
-        input.blue.y  = (coords.y * HEIGHT * 1.0 - HEIGHT/2) * 1.3;
+        if (player_being_moved < player_names.length) {
+            input[player_names[player_being_moved]].x = (-coords.x * WIDTH * 1.0 + WIDTH/2) * 1.6;
+            input[player_names[player_being_moved]].y = (coords.y * HEIGHT * 1.0 - HEIGHT/2) * 1.6;
+        }
     }
 
     function init_mouse_input() {
@@ -166,6 +168,10 @@ function main(
         }
     }
 
+    U.activate_next_player = function() {
+        player_being_moved += 1;
+        player_being_moved %= player_names.length + 1;
+    }
 
     function init_input() {
         switch (config.INPUT_TYPE) {
@@ -184,7 +190,6 @@ function main(
     init_input();
 
     var i;
-    var colornames = ['red', 'green', 'blue'];
 
     U.smoothing         = 0.5;
     var LAST_POS_WEIGHT = U.smoothing;
@@ -198,8 +203,8 @@ function main(
             i31 = i30+ 1;
 
             // update position with data from input server, after applying input smoothing
-            pos[i30] = (CUR_POS_WEIGHT * U.FLIP_X * input[colornames[i]].x) + LAST_POS_WEIGHT * U.prevpos[i30];
-            pos[i31] = (CUR_POS_WEIGHT * U.FLIP_Y * input[colornames[i]].y) + LAST_POS_WEIGHT * U.prevpos[i31];
+            pos[i30] = (CUR_POS_WEIGHT * U.FLIP_X * input[player_names[i]].x) + LAST_POS_WEIGHT * U.prevpos[i30];
+            pos[i31] = (CUR_POS_WEIGHT * U.FLIP_Y * input[player_names[i]].y) + LAST_POS_WEIGHT * U.prevpos[i31];
 
             // store position as previous position
             U.prevpos[i30] = pos[i30];
