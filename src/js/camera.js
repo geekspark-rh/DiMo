@@ -4,14 +4,15 @@
 (function (global) {
 
 var deps = [
-    'three'
+    'three',
+    'dimo/particles',
 ];
 
-function main(THREE) {
+function main(THREE, particles) {
 
     var camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 5, 9001 );
 
-    camera.position.z = 2750;
+    camera.position.z = 1750;
 
     return camera;
 

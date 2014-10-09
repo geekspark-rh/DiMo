@@ -45,7 +45,7 @@ function main(
 
     P.MAX_VEL = 4;
     P.count   = 2e4;
-    P.size    = 16;
+    P.size    = 8;
 
     var accd  = 1.75; // how much the acceleration is allowed to change each frame
     var accdh = accd / 2;

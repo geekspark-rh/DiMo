@@ -27,12 +27,12 @@ vec3 color_cycle_add = vec3(R_ADD, G_ADD, B_ADD);
 
 void main() {
 
-    cycler = vec3(vel_m+accel_m/max_accel);
+    cycler = vec3(pow(vel_m+accel_m/max_accel, 2.0));
     cycler *= PI2;
     cycler += color_cycle_add;
     cycler = cos(cycler);
-    cycler += 1.0;
-    cycler /= 2.0;
+    cycler += 0.5;
+    /* cycler /= 2.0; */
 
     newcolor = cycler.x * color0
              + cycler.y * color1
