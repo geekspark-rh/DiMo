@@ -9,7 +9,7 @@ function main() {
     var config = {
         MAX_ACCEL               : 1,
         RANDOM_GRAVITY_VARIANCE : 0.2,
-        G                       : -9.81*1e3,
+        G                       : -1e4,
         DISPLAY_STATS           : true,
         CONFIG_PANEL_VISIBLE    : true,
         INPUT_TYPE              : ['websockets', 'mouse'][1],
