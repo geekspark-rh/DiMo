@@ -65,8 +65,8 @@ function main(
 
     var players_folder = gui.addFolder('Players');
 
-    players_folder.add(players, 'smoothing', 0, 1)
-        .step(0.1)
+    players_folder.add(players, 'smoothing', 0, 0.99)
+        .step(0.01)
         .name('input smoothing')
         .onChange(players.set_smoothing);
     players_folder.add(players, 'size', 0, 256)
