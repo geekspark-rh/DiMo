@@ -84,6 +84,40 @@ function main() {
                         "b": 0.29873125720876587
                     }
                 }
+            },
+            "Orbits": {
+                "0": {
+                    "MAX_ACCEL": 0.37,
+                    "CYCLE_ACCELERATION": false,
+                    "RANDOM_GRAVITY_VARIANCE": 0.2
+                },
+                "1": {
+                    "smoothing": 0.5,
+                    "size": 256
+                },
+                "2": {},
+                "3": {
+                    "MAX_VEL": 6.352576253661899,
+                    "MIN_ACCEL_DIST": 0,
+                    "size": 11.422195416164053
+                },
+                "4": {
+                    "color0": {
+                        "r": 1,
+                        "g": 0,
+                        "b": 0
+                    },
+                    "color1": {
+                        "r": 0,
+                        "g": 1,
+                        "b": 0
+                    },
+                    "color2": {
+                        "r": 0,
+                        "g": 0.5,
+                        "b": 1
+                    }
+                }
             }
         },
         "folders": {
@@ -108,7 +142,7 @@ function main() {
                 "folders": {}
             }
         }
-    };
+    }
 }
 
 define(deps, main);
