@@ -31,14 +31,14 @@ function main(m, config) {
         r = Math.pow(vec2.distance(p1v, p2v), 2);
         vec2.subtract(ov, p2v, p1v);
         vec2.normalize(ov, ov);
-        mag = f*config.G/r;
+        mag = f/r;
         vec2.scale(ov, ov, Math.abs(mag) < config.MAX_ACCEL ? mag : 0);
         return ov;
     };
 
     var xd2, yd2;
 
-    function accel(p1x, p1y, p2x, p2y, f) {
+    G.accel = function(dest, p1x, p1y, p2x, p2y, f) {
         // I wrote this one by hand thinking it'd be faster than relying on
         // vector library functions with the overhead of many function calls.
         // It's MUCH MUCH faster than threejs vector math, but it's exactly the
@@ -57,12 +57,19 @@ function main(m, config) {
         ux = xd / nv;
         uy = yd / nv;
 
-        ax = f * config.G * ux / r;
-        ay = f * config.G * uy / r;
+        mag = f / r;
 
-        return [ax, ay];
+        if (Math.abs(mag) > config.MAX_ACCEL) {
+            mag = config.MAX_ACCEL * Math.abs(mag) / mag;
+        }
 
-    }
+        ax = ux * mag;
+        ay = uy * mag;
+
+        dest[0] = ax;
+        dest[1] = ay;
+
+    };
 
     return G;
 }
