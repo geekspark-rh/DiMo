@@ -98,8 +98,8 @@ function main(
 
         U.sizes[ v ] = U.size;
 
-        U.positions[ v * 3 + 0 ] = ( Math.random() * accd - accdh ) * WIDTH;
-        U.positions[ v * 3 + 1 ] = ( Math.random() * accd - accdh ) * HEIGHT;
+        U.positions[ v * 3 + 0 ] = 0;// ( Math.random() * accd - accdh ) * WIDTH;
+        U.positions[ v * 3 + 1 ] = 0;// ( Math.random() * accd - accdh ) * HEIGHT;
         U.positions[ v * 3 + 2 ] = 10; // z is fixed
 
         color = colors[ v % colors.length ];
@@ -170,8 +170,8 @@ function main(
 
     U.activate_next_player = function() {
         player_being_moved += 1;
-        player_being_moved %= player_names.length + 1;
-    }
+        player_being_moved %= U.count + 1;
+    };
 
     function init_input() {
         switch (config.INPUT_TYPE) {
