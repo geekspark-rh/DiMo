@@ -27,7 +27,7 @@ vec3 color_cycle_add = vec3(R_ADD, G_ADD, B_ADD);
 
 void main() {
 
-    cycler = vec3(pow(vel_m+accel_m/max_accel, 2.0));
+    cycler = vec3(log(pow( vel_m, 0.25 )));
     cycler *= PI2;
     cycler += color_cycle_add;
     cycler = cos(cycler);
