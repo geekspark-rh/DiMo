@@ -88,27 +88,33 @@ function main(
 
     } );
 
-    U.positions    = new Float32Array( U.count * 3 );
-    U.prevpos      = new Float32Array( U.count * 3 );
-    U.colors       = new Float32Array( U.count * 3 );
-    U.sizes        = new Float32Array( U.count );
     var color;
 
-    for( var v = 0; v < U.count; v++ ) {
+    function set_count(c) {
+        U.count = c;
+        U.positions    = new Float32Array( U.count * 3 );
+        U.prevpos      = new Float32Array( U.count * 3 );
+        U.colors       = new Float32Array( U.count * 3 );
+        U.sizes        = new Float32Array( U.count );
 
-        U.sizes[ v ] = U.size;
+        for( var v = 0; v < U.count; v++ ) {
 
-        U.positions[ v * 3 + 0 ] = 0;// ( Math.random() * accd - accdh ) * WIDTH;
-        U.positions[ v * 3 + 1 ] = 0;// ( Math.random() * accd - accdh ) * HEIGHT;
-        U.positions[ v * 3 + 2 ] = 10; // z is fixed
+            U.sizes[ v ] = U.size;
 
-        color = colors[ v % colors.length ];
+            U.positions[ v * 3 + 0 ] = 0;// ( Math.random() * accd - accdh ) * WIDTH;
+            U.positions[ v * 3 + 1 ] = 0;// ( Math.random() * accd - accdh ) * HEIGHT;
+            U.positions[ v * 3 + 2 ] = 10; // z is fixed
 
-        U.colors[ v * 3 + 0 ] = color.r;
-        U.colors[ v * 3 + 1 ] = color.g;
-        U.colors[ v * 3 + 2 ] = color.b;
+            color = colors[ v % colors.length ];
 
+            U.colors[ v * 3 + 0 ] = color.r;
+            U.colors[ v * 3 + 1 ] = color.g;
+            U.colors[ v * 3 + 2 ] = color.b;
+
+        }
     }
+
+    set_count(U.count);
 
     U.geometry.addAttribute( 'position'     , new THREE.BufferAttribute( U.positions,  3 ) );
     U.geometry.addAttribute( 'customColor'  , new THREE.BufferAttribute( U.colors, 3 ) );
@@ -214,6 +220,8 @@ function main(
 
         U.geometry.attributes.position.needsUpdate = true;
     };
+
+    U.set_count = set_count;
 
     U.set_size = function(s) {
         var i;
